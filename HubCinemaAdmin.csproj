@@ -6,4 +6,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\DTOs\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="bootstrap" Version="5.3.6" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,23 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace HubCinemaAdmin.Models
+{
+    public class MovieDTO
+    {
+        public int IDMovie { get; set; }
+        [Display(Name = "Tên phim")]
+        public string MovieName { get; set; }
+        [Display(Name = "Thể loại")]
+        public string Genre { get; set; }
+        [Display(Name = "Thời lượng")]
+        public int Duration { get; set; }
+        [Display(Name = "Mô tả")]
+        public string Description { get; set; }
+        [Display(Name = "Đạo diễn")]
+        public string Director { get; set; }
+        [Display(Name = "Ngày phát hành")]
+        public DateTime ReleaseDate { get; set; }
+        public string CoverURL { get; set; }
+        public string TrailerURL { get; set; }
+    }
+}

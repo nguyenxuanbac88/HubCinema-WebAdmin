@@ -1,5 +1,7 @@
 ﻿using HubCinemaAdmin.Models;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Drawing.Printing;
 
 namespace HubCinemaAdmin.Controllers
 {
@@ -18,9 +20,11 @@ namespace HubCinemaAdmin.Controllers
         public async Task<IActionResult> Create(MovieDTO movie)
         {
             if (!ModelState.IsValid)
+            {
                 return View(movie);
+            }
 
-            var response = await _httpClient.PostAsJsonAsync("http://localhost:5264/api/Public/CreateMovie", movie);
+            var response = await _httpClient.PostAsJsonAsync("http://localhost:5264/api/AdminPOST/CreateMovie", movie);
 
             if (response.IsSuccessStatusCode)
             {
@@ -33,13 +37,25 @@ namespace HubCinemaAdmin.Controllers
                 return View(movie);
             }
         }
-        public async Task<IActionResult> LoadListMovie()
+        public async Task<IActionResult> LoadListMovie(int pageNumber = 1)
         {
+            int pageSize = 10;
             var response = await _httpClient.GetAsync("http://localhost:5264/api/Public/GetMovies");
             if (response.IsSuccessStatusCode)
             {
-                var movies = await response.Content.ReadFromJsonAsync<List<MovieDTO>>();
-                return View(movies);
+                var jsonString = await response.Content.ReadAsStringAsync();
+                var movies = JsonConvert.DeserializeObject<List<MovieDTO>>(jsonString);
+
+                int totalMovies = movies.Count;
+                var moviesPaged = movies
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                ViewBag.CurrentPage = pageNumber;
+                ViewBag.TotalPages = (int)Math.Ceiling((double)totalMovies / pageSize);
+
+                return View(moviesPaged);
             }
             else
             {
@@ -61,9 +77,12 @@ namespace HubCinemaAdmin.Controllers
         public async Task<IActionResult> EditMovie(MovieDTO movie)
         {
             if (!ModelState.IsValid)
+            {
                 return View(movie);
-            var response = await _httpClient.PutAsJsonAsync($"http://localhost:5264/api/Public/UpdateMovie/{movie.IDMovie}", movie);
-            if(response.IsSuccessStatusCode)
+            }
+
+            var response = await _httpClient.PutAsJsonAsync($"http://localhost:5264/api/AdminPUT/UpdateMovie/{movie.IDMovie}", movie);
+            if (response.IsSuccessStatusCode)
             {
                 TempData["Success"] = "Cập nhật phim thành công!";
                 return RedirectToAction("LoadListMovie");

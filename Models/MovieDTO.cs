@@ -4,7 +4,7 @@ namespace HubCinemaAdmin.Models
 {
     public class MovieDTO
     {
-        public int IDMovie { get; set; }
+        public int? IDMovie { get; set; }
         [Display(Name = "Tên phim")]
         public string MovieName { get; set; }
         [Display(Name = "Thể loại")]
@@ -19,5 +19,11 @@ namespace HubCinemaAdmin.Models
         public DateTime ReleaseDate { get; set; }
         public string CoverURL { get; set; }
         public string TrailerURL { get; set; }
+        [Display(Name = "Giới hạn tuổi")]
+        public string AgeRestriction { get; set; }
+        [Display(Name = "Nhà sản xuất")]
+        public string Producer { get; set; }
+        [Display(Name = "Diễn viên")]
+        public string Actors { get; set; }
     }
 }

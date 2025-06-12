@@ -3,42 +3,88 @@
 @{
     ViewData["Title"] = "LoadListMovie";
     Layout = "~/Views/Shared/_Layout.cshtml";
-
-    // Lấy 1 item mẫu để lấy DisplayNameFor, tránh lỗi khi Model rỗng
     var firstItem = Model.FirstOrDefault() ?? new HubCinemaAdmin.Models.MovieDTO();
 }
 
-
 <div class="container">
-    <h1 class="mb-4 title">Danh sách phim</h1>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold">Quản lý phim / Danh sách phim</h6>
+        <div>
+            <a asp-action="Create" class="btn btn-primary me-2">
+                <i class="fas fa-plus"></i> Tạo phim
+            </a>
+        </div>
+    </div>
 
-    <table class="table table-bordered align-middle">
-        <thead class="table-secondary">
-            <tr>
-                <th>@Html.DisplayNameFor(model => firstItem.MovieName)</th>
-                <th>@Html.DisplayNameFor(model => firstItem.Genre)</th>
-                <th>@Html.DisplayNameFor(model => firstItem.Duration)</th>
-                <th>@Html.DisplayNameFor(model => firstItem.Director)</th>
-                <th>@Html.DisplayNameFor(model => firstItem.ReleaseDate)</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead class="table-light">
                 <tr>
-                    <td class="color-main">@Html.DisplayFor(modelItem => item.MovieName)</td>
-                    <td>@Html.DisplayFor(modelItem => item.Genre)</td>
-                    <td>@Html.DisplayFor(modelItem => item.Duration) phút</td>
-                    <td>@Html.DisplayFor(modelItem => item.Director)</td>
-                    <td>@(item.ReleaseDate.ToString("dd/MM/yyyy") ?? "")</td>
-                    <td>
-                        <a asp-action="EditMovie" asp-route-id="@item.IDMovie" class="btn btn-sm btn-warning">Sửa</a>
-                        <a asp-action="Details" asp-route-id="@item.IDMovie" class="btn btn-sm btn-info me-1">Chi tiết</a>
-                        <a asp-action="Delete" asp-route-id="@item.IDMovie" class="btn btn-sm btn-danger">Xóa</a>
-                    </td>
+                    <th>@Html.DisplayNameFor(model => firstItem.MovieName)</th>
+                    <th>@Html.DisplayNameFor(model => firstItem.Genre)</th>
+                    <th>@Html.DisplayNameFor(model => firstItem.Duration)</th>
+                    <th>@Html.DisplayNameFor(model => firstItem.Director)</th>
+                    <th>@Html.DisplayNameFor(model => firstItem.AgeRestriction)</th>
+                    <th>@Html.DisplayNameFor(model => firstItem.ReleaseDate)</th>
+                    <th>Thao tác</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <a asp-action="EditMovie" asp-route-id="@item.IDMovie" class="text-main fw-semibold text-decoration-none">
+                                @item.MovieName
+                            </a>
+                        </td>
+                        <td>
+                            @foreach (var genre in item.Genre.Split(','))
+                            {
+                                <span class="badge bg-light text-main border-main me-1">@genre.Trim()</span>
+                            }
+                        </td>
+                        <td>@item.Duration phút</td>
+                        <td><span class="badge bg-light text-primary border border-primary">@item.Director</span></td>
+                        <td>
+                            <span class="badge bg-light text-warning border border-warning">@item.AgeRestriction</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-danger border border-danger">
+                                @item.ReleaseDate.ToString("dd-MM-yyyy")
+                            </span>
+                        </td>
+                        <td>
+                            <a asp-action="EditMovie" asp-route-id="@item.IDMovie" class="btn btn-sm btn-info">Chi tiết</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <nav aria-label="Pagination">
+            <ul class="pagination justify-content-center mt-3">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="LoadListMovie" asp-route-pageNumber="@(ViewBag.CurrentPage - 1)">«</a>
+                    </li>
+                }
+
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                        <a class="page-link" asp-action="LoadListMovie" asp-route-pageNumber="@i">@i</a>
+                    </li>
+                }
+
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="LoadListMovie" asp-route-pageNumber="@(ViewBag.CurrentPage + 1)">»</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+
+    </div>
 </div>

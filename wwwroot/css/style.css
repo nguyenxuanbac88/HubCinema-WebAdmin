@@ -10,8 +10,12 @@
  * Copyright 2011-2022 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
-.color-main {
-    color: #E48600;
+.text-main {
+    color: #E48600 !important;
+}
+
+.border-main {
+    border: 1px solid #E48600 !important;
 }
 
 .background-main {

@@ -5,12 +5,12 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+
 <div class="container mt-4">
     <h2 class="mb-4 text-primary">Tạo phim mới</h2>
 
     <form asp-action="Create">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
         <div class="row g-3">
             <div class="col-md-6">
                 <label asp-for="MovieName" class="form-label"></label>
@@ -59,6 +59,24 @@
                 <textarea asp-for="Description" class="form-control" rows="3"></textarea>
                 <span asp-validation-for="Description" class="text-danger small"></span>
             </div>
+            <div class="col-md-6">
+                <label asp-for="AgeRestriction" class="form-label"></label>
+                <input asp-for="AgeRestriction" class="form-control" />
+                <span asp-validation-for="AgeRestriction" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Producer" class="form-label"></label>
+                <input asp-for="Producer" class="form-control" />
+                <span asp-validation-for="Producer" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Actors" class="form-label"></label>
+                <input asp-for="Actors" class="form-control" />
+                <span asp-validation-for="Actors" class="text-danger small"></span>
+            </div>
+
         </div>
 
         <div class="mt-4">

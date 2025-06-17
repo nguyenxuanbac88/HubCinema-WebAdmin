@@ -8,6 +8,7 @@ namespace HubCinemaAdmin.Controllers
     public class MovieManagementController : Controller
     {
         private readonly HttpClient _httpClient;
+        private string _linkHost = "http://api.dvxuanbac.com:2030/api";
         public MovieManagementController(HttpClient httpClient)
         {
             _httpClient = httpClient;
@@ -24,7 +25,7 @@ namespace HubCinemaAdmin.Controllers
                 return View(movie);
             }
 
-            var response = await _httpClient.PostAsJsonAsync("http://localhost:5264/api/AdminPOST/CreateMovie", movie);
+            var response = await _httpClient.PostAsJsonAsync(_linkHost + "/AdminPOST/CreateMovie", movie);
 
             if (response.IsSuccessStatusCode)
             {
@@ -40,7 +41,7 @@ namespace HubCinemaAdmin.Controllers
         public async Task<IActionResult> LoadListMovie(int pageNumber = 1)
         {
             int pageSize = 10;
-            var response = await _httpClient.GetAsync("http://localhost:5264/api/Public/GetMovies");
+            var response = await _httpClient.GetAsync(_linkHost + "/Public/GetMovies");
             if (response.IsSuccessStatusCode)
             {
                 var jsonString = await response.Content.ReadAsStringAsync();
@@ -65,7 +66,7 @@ namespace HubCinemaAdmin.Controllers
         }
         public async Task<IActionResult> EditMovie(int id)
         {
-            var response = await _httpClient.GetAsync($"http://localhost:5264/api/Public/GetMovieById/{id}");
+            var response = await _httpClient.GetAsync(_linkHost + $"/Public/GetMovieById/{id}");
             if (response.IsSuccessStatusCode)
             {
                 var movie = await response.Content.ReadFromJsonAsync<MovieDTO>();
@@ -81,7 +82,7 @@ namespace HubCinemaAdmin.Controllers
                 return View(movie);
             }
 
-            var response = await _httpClient.PutAsJsonAsync($"http://localhost:5264/api/AdminPUT/UpdateMovie/{movie.IDMovie}", movie);
+            var response = await _httpClient.PutAsJsonAsync(_linkHost + $"AdminPUT/UpdateMovie/{movie.IDMovie}", movie);
             if (response.IsSuccessStatusCode)
             {
                 TempData["Success"] = "Cập nhật phim thành công!";

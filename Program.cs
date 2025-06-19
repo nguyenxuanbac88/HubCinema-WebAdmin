@@ -1,6 +1,9 @@
+using HubCinemaAdmin.Middlewares;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddSession();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
 
@@ -15,7 +18,8 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseSession();
+app.UseMiddleware<RequireLoginMiddleware>();
 app.UseAuthorization();
 
 app.MapControllerRoute(

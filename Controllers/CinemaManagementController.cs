@@ -14,6 +14,29 @@ namespace HubCinemaAdmin.Controllers
         {
             _httpClient = httpClient;
         }
+        public IActionResult CreateCinema()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> CreateCinema(CinemaDTO cinemaDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(cinemaDTO);
+            }
+            var response = await _httpClient.PostAsJsonAsync(_linkHost + "/AdminPOST/CreateCinema", cinemaDTO);
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = "Tạo rạp chiếu thành công!";
+                return RedirectToAction("LoadListCinema");
+            }
+            else
+            {
+                TempData["Error"] = "Tạo rạp chiếu thất bại! Vui lòng kiểm tra lại thông tin.";
+                return View(cinemaDTO);
+            }
+        }
         public async Task<IActionResult> LoadListCinema()
         {
             var response = await _httpClient.GetAsync(_linkHost + "/Public/GetCinemas");

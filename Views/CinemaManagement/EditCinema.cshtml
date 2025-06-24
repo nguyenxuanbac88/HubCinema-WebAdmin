@@ -1,46 +1,112 @@
-﻿@model HubCinemaAdmin.Models.CinemaDTO
+﻿@model CinemaDTO
 
 @{
-    ViewData["Title"] = "EditCinema";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Chỉnh sửa rạp chiếu";
+    var rooms = ViewBag.Rooms as List<RoomDTO> ?? new List<RoomDTO>();
 }
 
-<h1>EditCinema</h1>
+<div class="container">
+    <h2 class="text-primary mb-4"><i class="bi bi-pencil-square"></i> Chỉnh sửa rạp chiếu</h2>
 
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="EditCinema">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="IDCinema" />
-            <div class="form-group">
-                <label asp-for="CinemaName" class="control-label"></label>
-                <input asp-for="CinemaName" class="form-control" />
-                <span asp-validation-for="CinemaName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Address" class="control-label"></label>
-                <input asp-for="Address" class="form-control" />
-                <span asp-validation-for="Address" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="City" class="control-label"></label>
-                <input asp-for="City" class="form-control" />
-                <span asp-validation-for="City" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
     }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <form asp-action="EditCinema" method="post" class="mb-5">
+        <input type="hidden" asp-for="IDCinema" />
+
+        <div class="mb-3">
+            <label asp-for="CinemaName" class="form-label">Tên rạp</label>
+            <input asp-for="CinemaName" class="form-control" />
+            <span asp-validation-for="CinemaName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Address" class="form-label">Địa chỉ</label>
+            <input asp-for="Address" class="form-control" />
+            <span asp-validation-for="Address" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="City" class="form-label">Thành phố</label>
+            <input asp-for="City" class="form-control" />
+            <span asp-validation-for="City" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Lưu thay đổi</button>
+        <a asp-action="LoadListCinema" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Quay lại</a>
+    </form>
+
+    <hr class="my-4" />
+
+    <h3 class="fw-semibold mb-3 text-primary"><i class="bi bi-door-open-fill me-1"></i>Danh sách phòng chiếu</h3>
+
+    @if (rooms.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th>Ảnh</th>
+                        <th>Tên phòng</th>
+                        <th>Loại</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var room in rooms)
+                    {
+                        <tr>
+                            <td class="text-center" style="width: 120px;">
+                                <img src="@room.RoomImageURL" class="img-fluid rounded" style="max-height: 60px;" alt="Ảnh phòng" />
+                            </td>
+                            <td class="fw-medium">@room.RoomName</td>
+                            <td class="text-center">
+                                <span class="badge rounded-pill text-bg-warning">
+                                    @{
+                                        string typeName = room.RoomType switch
+                                        {
+                                            1 => "2D",
+                                            2 => "3D",
+                                            3 => "4D",
+                                            _ => "Khác"
+                                        };
+                                        @typeName
+                                    }
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                @if (room.Status)
+                                {
+                                    <span class="badge bg-success">Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Ngừng hoạt động</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <a href="#" class="btn btn-sm btn-info text-white">
+                                    <i class="bi bi-eye-fill me-1"></i>Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p class="text-muted fst-italic">Không có phòng chiếu nào thuộc rạp này.</p>
+    }
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }

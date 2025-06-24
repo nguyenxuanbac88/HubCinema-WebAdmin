@@ -49,36 +49,78 @@ namespace HubCinemaAdmin.Controllers
             TempData["Error"] = "Không thể tải danh sách rạp chiếu!";
             return View(new List<CinemaDTO>());
         }
+        // GET: EditCinema
         public async Task<IActionResult> EditCinema(int id)
         {
+            // Lấy thông tin rạp
             var response = await _httpClient.GetAsync(_linkHost + $"/Public/GetCinemaById/{id}");
-            if (response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
+                return RedirectToAction("LoadListCinema");
+
+            var cinema = await response.Content.ReadFromJsonAsync<CinemaDTO>();
+            if (cinema == null)
+                return RedirectToAction("LoadListCinema");
+
+            // Gọi API lấy danh sách phòng theo tên rạp
+            var roomResponse = await _httpClient.GetAsync(_linkHost + $"/Admin/GetRoomsByCinemaName/{Uri.EscapeDataString(cinema.CinemaName)}");
+            if (roomResponse.IsSuccessStatusCode)
             {
-                var cinema = await response.Content.ReadFromJsonAsync<CinemaDTO>();
-                return View(cinema);
+                var rooms = await roomResponse.Content.ReadFromJsonAsync<List<RoomDTO>>();
+                ViewBag.Rooms = rooms;
             }
-            return RedirectToAction("LoadListCinema");
+            else
+            {
+                ViewBag.Rooms = new List<RoomDTO>();
+            }
+
+            return View(cinema);
         }
+
+
+        // POST: EditCinema
         [HttpPost]
         public async Task<IActionResult> EditCinema(CinemaDTO cinemaDTO)
         {
             if (!ModelState.IsValid)
             {
+                // Nếu model không hợp lệ, load lại danh sách phòng
+                var roomResponse = await _httpClient.GetAsync(_linkHost + $"/Public/GetRoomsByCinemaID/{cinemaDTO.IDCinema}");
+                if (roomResponse.IsSuccessStatusCode)
+                {
+                    var rooms = await roomResponse.Content.ReadFromJsonAsync<List<RoomDTO>>();
+                    ViewBag.Rooms = rooms;
+                }
+                else
+                {
+                    ViewBag.Rooms = new List<RoomDTO>();
+                }
+
                 return View(cinemaDTO);
             }
 
-            var response = await _httpClient.PutAsJsonAsync(_linkHost + $"/AdminPUT/UpdateCinema/{cinemaDTO.IDCinema}", cinemaDTO);
+            // Gọi API cập nhật rạp
+            var response = await _httpClient.PutAsJsonAsync(_linkHost + $"/Admin/UpdateCinema/{cinemaDTO.IDCinema}", cinemaDTO);
 
             if (response.IsSuccessStatusCode)
             {
                 TempData["Success"] = "Cập nhật rạp chiếu thành công!";
                 return RedirectToAction("LoadListCinema");
             }
+
+            // Nếu cập nhật thất bại, load lại danh sách phòng
+            var fallbackRoomResponse = await _httpClient.GetAsync(_linkHost + $"/Public/GetRoomsByCinemaID/{cinemaDTO.IDCinema}");
+            if (fallbackRoomResponse.IsSuccessStatusCode)
+            {
+                var rooms = await fallbackRoomResponse.Content.ReadFromJsonAsync<List<RoomDTO>>();
+                ViewBag.Rooms = rooms;
+            }
             else
             {
-                TempData["Error"] = "Cập nhật rạp chiếu thất bại!";
-                return View(cinemaDTO);
+                ViewBag.Rooms = new List<RoomDTO>();
             }
+
+            TempData["Error"] = "Cập nhật rạp chiếu thất bại!";
+            return View(cinemaDTO);
         }
 
     }

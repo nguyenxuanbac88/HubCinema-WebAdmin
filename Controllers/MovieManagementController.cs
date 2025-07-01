@@ -1,4 +1,5 @@
-﻿using HubCinemaAdmin.Models;
+﻿using HubCinemaAdmin.Helpers;
+using HubCinemaAdmin.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Drawing.Printing;
@@ -8,7 +9,6 @@ namespace HubCinemaAdmin.Controllers
     public class MovieManagementController : Controller
     {
         private readonly HttpClient _httpClient;
-        private string _linkHost = "http://api.dvxuanbac.com:2030/api";
         public MovieManagementController(HttpClient httpClient)
         {
             _httpClient = httpClient;
@@ -25,7 +25,7 @@ namespace HubCinemaAdmin.Controllers
                 return View(movie);
             }
 
-            var response = await _httpClient.PostAsJsonAsync(_linkHost + "/AdminPOST/CreateMovie", movie);
+            var response = await _httpClient.PostAsJsonAsync(LinkHost.Url + "/AdminPOST/CreateMovie", movie);
 
             if (response.IsSuccessStatusCode)
             {
@@ -41,7 +41,7 @@ namespace HubCinemaAdmin.Controllers
         public async Task<IActionResult> LoadListMovie(int pageNumber = 1)
         {
             int pageSize = 10;
-            var response = await _httpClient.GetAsync(_linkHost + "/Public/GetMovies");
+            var response = await _httpClient.GetAsync(LinkHost.Url + "/Public/GetMovies");
             if (response.IsSuccessStatusCode)
             {
                 var jsonString = await response.Content.ReadAsStringAsync();
@@ -66,7 +66,7 @@ namespace HubCinemaAdmin.Controllers
         }
         public async Task<IActionResult> EditMovie(int id)
         {
-            var response = await _httpClient.GetAsync(_linkHost + $"/Public/GetMovieById/{id}");
+            var response = await _httpClient.GetAsync(LinkHost.Url + $"/Public/GetMovieById/{id}");
             if (response.IsSuccessStatusCode)
             {
                 var movie = await response.Content.ReadFromJsonAsync<MovieDTO>();
@@ -82,7 +82,7 @@ namespace HubCinemaAdmin.Controllers
                 return View(movie);
             }
 
-            var response = await _httpClient.PutAsJsonAsync(_linkHost + $"AdminPUT/UpdateMovie/{movie.IDMovie}", movie);
+            var response = await _httpClient.PutAsJsonAsync(LinkHost.Url + $"AdminPUT/UpdateMovie/{movie.IDMovie}", movie);
             if (response.IsSuccessStatusCode)
             {
                 TempData["Success"] = "Cập nhật phim thành công!";

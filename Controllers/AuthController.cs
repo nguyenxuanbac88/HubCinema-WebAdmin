@@ -1,4 +1,5 @@
-﻿using HubCinemaAdmin.Models;
+﻿using HubCinemaAdmin.Helpers;
+using HubCinemaAdmin.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HubCinemaAdmin.Controllers
@@ -10,7 +11,7 @@ namespace HubCinemaAdmin.Controllers
         public AuthController(IHttpClientFactory factory)
         {
             _httpClient = factory.CreateClient();
-            _httpClient.BaseAddress = new Uri("http://api.dvxuanbac.com:2030/");
+            _httpClient.BaseAddress = new Uri(LinkHost.Url);
         }
 
         public IActionResult Login()

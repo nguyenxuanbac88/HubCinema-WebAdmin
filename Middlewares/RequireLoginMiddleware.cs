@@ -17,7 +17,6 @@ namespace HubCinemaAdmin.Middlewares
             var path = context.Request.Path;
             var method = context.Request.Method;
 
-            // ✅ Chỉ chặn khi vào khu vực admin
             bool isProtectedPath =
                 (path.StartsWithSegments("/Auth/Login") && (method == "GET" || method == "POST")) ||
                 path.StartsWithSegments("/css") ||

@@ -1,4 +1,5 @@
-﻿using HubCinemaAdmin.Models;
+﻿using HubCinemaAdmin.Helpers;
+using HubCinemaAdmin.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http;
@@ -9,7 +10,6 @@ namespace HubCinemaAdmin.Controllers
     public class CinemaManagementController : Controller
     {
         private readonly HttpClient _httpClient;
-        private string _linkHost = "http://api.dvxuanbac.com:2030/api";
         public CinemaManagementController(HttpClient httpClient)
         {
             _httpClient = httpClient;
@@ -25,7 +25,7 @@ namespace HubCinemaAdmin.Controllers
             {
                 return View(cinemaDTO);
             }
-            var response = await _httpClient.PostAsJsonAsync(_linkHost + "/AdminPOST/CreateCinema", cinemaDTO);
+            var response = await _httpClient.PostAsJsonAsync(LinkHost.Url + "/AdminPOST/CreateCinema", cinemaDTO);
             if (response.IsSuccessStatusCode)
             {
                 TempData["Success"] = "Tạo rạp chiếu thành công!";
@@ -39,7 +39,7 @@ namespace HubCinemaAdmin.Controllers
         }
         public async Task<IActionResult> LoadListCinema()
         {
-            var response = await _httpClient.GetAsync(_linkHost + "/Public/GetCinemas");
+            var response = await _httpClient.GetAsync(LinkHost.Url + "/Public/GetCinemas");
             if (response.IsSuccessStatusCode)
             {
                 var jsonString = await response.Content.ReadAsStringAsync();
@@ -53,7 +53,7 @@ namespace HubCinemaAdmin.Controllers
         public async Task<IActionResult> EditCinema(int id)
         {
             // Lấy thông tin rạp
-            var response = await _httpClient.GetAsync(_linkHost + $"/Public/GetCinemaById/{id}");
+            var response = await _httpClient.GetAsync(LinkHost.Url + $"/Public/GetCinemaById/{id}");
             if (!response.IsSuccessStatusCode)
                 return RedirectToAction("LoadListCinema");
 
@@ -62,7 +62,7 @@ namespace HubCinemaAdmin.Controllers
                 return RedirectToAction("LoadListCinema");
 
             // Gọi API lấy danh sách phòng theo tên rạp
-            var roomResponse = await _httpClient.GetAsync(_linkHost + $"/Admin/GetRoomsByCinemaName/{Uri.EscapeDataString(cinema.CinemaName)}");
+            var roomResponse = await _httpClient.GetAsync(LinkHost.Url + $"/Admin/GetRoomsByCinemaName/{Uri.EscapeDataString(cinema.CinemaName)}");
             if (roomResponse.IsSuccessStatusCode)
             {
                 var rooms = await roomResponse.Content.ReadFromJsonAsync<List<RoomDTO>>();
@@ -84,7 +84,7 @@ namespace HubCinemaAdmin.Controllers
             if (!ModelState.IsValid)
             {
                 // Nếu model không hợp lệ, load lại danh sách phòng
-                var roomResponse = await _httpClient.GetAsync(_linkHost + $"/Public/GetRoomsByCinemaID/{cinemaDTO.IDCinema}");
+                var roomResponse = await _httpClient.GetAsync(LinkHost.Url + $"/Public/GetRoomsByCinemaID/{cinemaDTO.IDCinema}");
                 if (roomResponse.IsSuccessStatusCode)
                 {
                     var rooms = await roomResponse.Content.ReadFromJsonAsync<List<RoomDTO>>();
@@ -99,7 +99,7 @@ namespace HubCinemaAdmin.Controllers
             }
 
             // Gọi API cập nhật rạp
-            var response = await _httpClient.PutAsJsonAsync(_linkHost + $"/Admin/UpdateCinema/{cinemaDTO.IDCinema}", cinemaDTO);
+            var response = await _httpClient.PutAsJsonAsync(LinkHost.Url + $"/Admin/UpdateCinema/{cinemaDTO.IDCinema}", cinemaDTO);
 
             if (response.IsSuccessStatusCode)
             {
@@ -108,7 +108,7 @@ namespace HubCinemaAdmin.Controllers
             }
 
             // Nếu cập nhật thất bại, load lại danh sách phòng
-            var fallbackRoomResponse = await _httpClient.GetAsync(_linkHost + $"/Public/GetRoomsByCinemaID/{cinemaDTO.IDCinema}");
+            var fallbackRoomResponse = await _httpClient.GetAsync(LinkHost.Url + $"/Public/GetRoomsByCinemaID/{cinemaDTO.IDCinema}");
             if (fallbackRoomResponse.IsSuccessStatusCode)
             {
                 var rooms = await fallbackRoomResponse.Content.ReadFromJsonAsync<List<RoomDTO>>();

@@ -3,5 +3,6 @@
     public class LinkHost
     {
         public static readonly string Url = "http://api.dvxuanbac.com:2030/api";
+        public static readonly string DashboardSummary = $"{Url}/admin/dashboard/summary";
     }
 }

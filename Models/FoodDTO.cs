@@ -13,6 +13,7 @@ namespace HubCinemaAdmin.Models
         public decimal Price { get; set; }
         [Display(Name = "Ảnh")]
         public string ImageURL { get; set; }
+        public List<int> SelectedCinemaIds { get; set; } = new();
 
     }
 }

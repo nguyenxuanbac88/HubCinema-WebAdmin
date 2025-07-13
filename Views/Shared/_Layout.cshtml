@@ -76,10 +76,17 @@
                                 <a class="nav-link" asp-controller="CinemaManagement" asp-action="CreateCinema">Tạp rạp phim</a>
                             </nav>
                         </div>
-                        <a class="nav-link" asp-controller="FoodManagement" asp-action="CreateFood">
-                            <div class="sb-nav-link-icon"><i class="fa-solid fa-calendar-days"></i></div>
-                            Quản lý combo
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseCombo" aria-expanded="false" aria-controls="collapseCombo">
+                            <div class="sb-nav-link-icon"><i class="fa-solid fa-tv"></i></div>
+                            Quản lý Combo
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
+                        <div class="collapse" id="collapseCombo">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" asp-controller="FoodManagement" asp-action="LoadListCombo">Danh sách rạp phim</a>
+                                <a class="nav-link" asp-controller="FoodManagement" asp-action="CreateFood">Tạp rạp phim</a>
+                            </nav>
+                        </div>
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSchedule" aria-expanded="false" aria-controls="collapseSchedule">
                             <div class="sb-nav-link-icon"><i class="fa-solid fa-display"></i></div>
                             Quản lý suất chiếu

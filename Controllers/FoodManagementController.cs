@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 
 namespace HubCinemaAdmin.Controllers
 {
@@ -92,14 +93,63 @@ namespace HubCinemaAdmin.Controllers
 
                 if (!comboResponse.IsSuccessStatusCode)
                 {
-                    var err = await comboResponse.Content.ReadAsStringAsync();
-
                     TempData["Warning"] = "Tạo món ăn thành công nhưng không thể áp dụng cho các rạp!";
                 }
             }
 
             TempData["Success"] = "Tạo món ăn thành công!";
-            return RedirectToAction("LoadListCinema");
+            return RedirectToAction("LoadListCombo");
+        }
+
+        public async Task<IActionResult> LoadListCombo()
+        {
+            var client = _httpClientFactory.CreateClient();
+            var response = await client.GetAsync(LinkHost.Url + "/Public/GetCinemas");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var cinemas = JsonConvert.DeserializeObject<List<CinemaDTO>>(json);
+                ViewBag.Cinemas = cinemas;
+            }
+            else
+            {
+                ViewBag.Cinemas = new List<CinemaDTO>();
+            }
+
+            return View();
+        }
+
+        public async Task<IActionResult> GetFoodsByCinema(int cinemaId)
+        {
+            var client = _httpClientFactory.CreateClient();
+            var response = await client.GetAsync(LinkHost.Url + $"/Public/GetCombosByCinema/{cinemaId}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return Content("<div class='alert alert-danger'>Không thể tải dữ liệu món ăn.</div>", "text/html");
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            var foods = JsonConvert.DeserializeObject<List<FoodDTO>>(content);
+
+            return PartialView("_FoodListPartial", foods);
+        }
+
+        public async Task<IActionResult> GetAllCombos()
+        {
+            var client = _httpClientFactory.CreateClient();
+            var response = await client.GetAsync(LinkHost.Url + "/Public/GetFoods");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return Content("<div class='alert alert-danger'>Không thể tải danh sách món ăn.</div>", "text/html");
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            var foods = JsonConvert.DeserializeObject<List<FoodDTO>>(content);
+
+            return PartialView("_FoodListPartial", foods);
         }
     }
 }

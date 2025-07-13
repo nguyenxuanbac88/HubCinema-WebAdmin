@@ -2,46 +2,51 @@
 using HubCinemaAdmin.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Drawing.Printing;
 
 namespace HubCinemaAdmin.Controllers
 {
-    public class MovieManagementController : Controller
+    public class MovieManagementController : BaseController
     {
-        private readonly HttpClient _httpClient;
-        public MovieManagementController(HttpClient httpClient)
+        private readonly IHttpClientFactory _httpClientFactory;
+
+        public MovieManagementController(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
         }
+
         public IActionResult Create()
         {
             return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> Create(MovieDTO movie)
         {
             if (!ModelState.IsValid)
-            {
                 return View(movie);
-            }
 
-            var response = await _httpClient.PostAsJsonAsync(LinkHost.Url + "/AdminPOST/CreateMovie", movie);
+            if (!IsAuthenticated)
+                return RedirectToAction("Login", "Auth");
+
+            var client = CreateAuthorizedClient(_httpClientFactory);
+            var response = await client.PostAsJsonAsync(LinkHost.Url + "/Admin/CreateMovie", movie);
 
             if (response.IsSuccessStatusCode)
             {
                 TempData["Success"] = "Tạo phim thành công!";
                 return RedirectToAction("LoadListMovie");
             }
-            else
-            {
-                TempData["Error"] = "Tạo phim thất bại!";
-                return View(movie);
-            }
+
+            TempData["Error"] = "Tạo phim thất bại!";
+            return View(movie);
         }
+
         public async Task<IActionResult> LoadListMovie(int pageNumber = 1)
         {
             int pageSize = 10;
-            var response = await _httpClient.GetAsync(LinkHost.Url + "/Public/GetMovies");
+            var client = _httpClientFactory.CreateClient();
+
+            var response = await client.GetAsync(LinkHost.Url + "/Public/GetMovies");
             if (response.IsSuccessStatusCode)
             {
                 var jsonString = await response.Content.ReadAsStringAsync();
@@ -58,41 +63,44 @@ namespace HubCinemaAdmin.Controllers
 
                 return View(moviesPaged);
             }
-            else
-            {
-                TempData["Error"] = "Không thể tải danh sách phim!";
-                return View(new List<MovieDTO>());
-            }
+
+            TempData["Error"] = "Không thể tải danh sách phim!";
+            return View(new List<MovieDTO>());
         }
+
         public async Task<IActionResult> EditMovie(int id)
         {
-            var response = await _httpClient.GetAsync(LinkHost.Url + $"/Public/GetMovieById/{id}");
+            var client = _httpClientFactory.CreateClient();
+            var response = await client.GetAsync(LinkHost.Url + $"/Public/GetMovieById/{id}");
             if (response.IsSuccessStatusCode)
             {
                 var movie = await response.Content.ReadFromJsonAsync<MovieDTO>();
                 return View(movie);
             }
+
             return RedirectToAction("LoadListMovie");
         }
+
         [HttpPost]
         public async Task<IActionResult> EditMovie(MovieDTO movie)
         {
             if (!ModelState.IsValid)
-            {
                 return View(movie);
-            }
 
-            var response = await _httpClient.PutAsJsonAsync(LinkHost.Url + $"AdminPUT/UpdateMovie/{movie.IDMovie}", movie);
+            if (!IsAuthenticated)
+                return RedirectToAction("Login", "Auth");
+
+            var client = CreateAuthorizedClient(_httpClientFactory);
+            var response = await client.PutAsJsonAsync(LinkHost.Url + $"/Admin/UpdateMovie/{movie.IDMovie}", movie);
+
             if (response.IsSuccessStatusCode)
             {
                 TempData["Success"] = "Cập nhật phim thành công!";
                 return RedirectToAction("LoadListMovie");
             }
-            else
-            {
-                TempData["Error"] = "Cập nhật phim thất bại!";
-                return View(movie);
-            }
+
+            TempData["Error"] = "Cập nhật phim thất bại!";
+            return View(movie);
         }
     }
 }

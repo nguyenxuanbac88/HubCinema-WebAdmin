@@ -1,6 +1,7 @@
 ﻿using HubCinemaAdmin.Helpers;
 using HubCinemaAdmin.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace HubCinemaAdmin.Controllers
 {
@@ -22,13 +23,29 @@ namespace HubCinemaAdmin.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginDTO login)
         {
+            if (!ModelState.IsValid)
+                return View(login);
+
             var response = await _httpClient.PostAsJsonAsync("api/auth/login", login);
+
             if (response.IsSuccessStatusCode)
             {
-                string token = await response.Content.ReadAsStringAsync();
+                var responseString = await response.Content.ReadAsStringAsync();
 
-                HttpContext.Session.SetString("Token", token);
-                return RedirectToAction("Dashboard", "Dashboard");
+                // Giả sử API trả về: { "token": "...." }
+                var tokenObj = JsonSerializer.Deserialize<TokenResponse>(responseString, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (tokenObj != null && !string.IsNullOrEmpty(tokenObj.Token))
+                {
+                    HttpContext.Session.SetString("Token", tokenObj.Token);
+                    return RedirectToAction("Dashboard", "Dashboard");
+                }
+
+                ViewBag.Error = "Không nhận được token từ API.";
+                return View(login);
             }
 
             ViewBag.Error = "Tên đăng nhập hoặc mật khẩu không đúng.";

@@ -64,6 +64,19 @@ namespace HubCinemaAdmin.Controllers
             var responseContent = await response.Content.ReadAsStringAsync();
             var foodCreated = JsonConvert.DeserializeObject<FoodDTO>(responseContent);
 
+            if (dto.ApplyToAllCinemas && foodCreated?.IDFood != null)
+            {
+                var getAllCinemasClient = _httpClientFactory.CreateClient();
+                var getCinemasResp = await getAllCinemasClient.GetAsync(LinkHost.Url + "/Public/GetCinemas");
+
+                if (getCinemasResp.IsSuccessStatusCode)
+                {
+                    var cinemaJson = await getCinemasResp.Content.ReadAsStringAsync();
+                    var allCinemas = JsonConvert.DeserializeObject<List<CinemaDTO>>(cinemaJson);
+                    dto.SelectedCinemaIds = allCinemas.Select(c => c.IDCinema).ToList();
+                }
+            }
+
             if (dto.SelectedCinemaIds != null && dto.SelectedCinemaIds.Any() && foodCreated?.IDFood != null)
             {
                 var comboDto = new CreateComboCinema

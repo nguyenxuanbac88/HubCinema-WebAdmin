@@ -14,6 +14,7 @@ namespace HubCinemaAdmin.Models
         [Display(Name = "Ảnh")]
         public string ImageURL { get; set; }
         public List<int> SelectedCinemaIds { get; set; } = new();
+        public bool ApplyToAllCinemas { get; set; }
 
     }
 }

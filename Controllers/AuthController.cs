@@ -32,7 +32,6 @@ namespace HubCinemaAdmin.Controllers
             {
                 var responseString = await response.Content.ReadAsStringAsync();
 
-                // Giả sử API trả về: { "token": "...." }
                 var tokenObj = JsonSerializer.Deserialize<TokenResponse>(responseString, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true

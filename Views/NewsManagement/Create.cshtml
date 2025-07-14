@@ -1,0 +1,75 @@
+﻿@model HubCinemaAdmin.Models.News
+
+@{
+    ViewData["Title"] = "Tạo bài viết mới";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+
+            <h2 class="mb-4">Tạo bài viết mới</h2>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger">@ViewBag.Error</div>
+            }
+
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label">Tiêu đề</label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Subtitle" class="form-label">Phụ đề</label>
+                    <input asp-for="Subtitle" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Slug" class="form-label">Slug (URL)</label>
+                    <input asp-for="Slug" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Thumbnail (upload ảnh)</label>
+                    <input type="file" name="thumbnailFile" class="form-control" accept="image/*" />
+                </div>
+
+                <!-- Hidden input để hiển thị link đã gán từ server (tùy chọn) -->
+                <input type="hidden" asp-for="Thumbnail" />
+
+                <div class="mb-3">
+                    <label asp-for="Status" class="form-label">Trạng thái</label>
+                    <select asp-for="Status" class="form-select">
+                        <option value="A">Hiển thị</option>
+                        <option value="H">Ẩn</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Content" class="form-label">Nội dung bài viết</label>
+                    <textarea asp-for="Content" class="form-control" id="content-editor" rows="10"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Tạo bài viết</button>
+                <a asp-action="Index" class="btn btn-secondary ms-2">Quay lại</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.tiny.cloud/1/1hifc6jcjzon2bch5dk4j3mfa4pw7k0z89mi12m2l8xbt1d4/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: '#content-editor',
+            height: 300,
+            menubar: false,
+            plugins: 'link image code lists',
+            toolbar: 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright | bullist numlist | link image | code',
+            branding: false
+        });
+    </script>
+}

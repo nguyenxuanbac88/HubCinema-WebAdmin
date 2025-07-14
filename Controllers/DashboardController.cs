@@ -18,7 +18,7 @@ namespace HubCinemaAdmin.Controllers
         public async Task<IActionResult> Dashboard()
         {
             
-            string token = HttpContext.Session.GetString("JWTToken");
+            string token = HttpContext.Session.GetString("Token");
             if (string.IsNullOrEmpty(token))
             {
                 //Test thử 

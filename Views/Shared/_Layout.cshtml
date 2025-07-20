@@ -86,7 +86,13 @@
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSchedule" aria-expanded="false" aria-controls="collapseSchedule">
                             <div class="sb-nav-link-icon"><i class="fa-solid fa-display"></i></div>
                             Quản lý suất chiếu
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
+                        <div class="collapse" id="collapseSchedule">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" asp-controller="ShowtimeManagement" asp-action="Timeline">Timeline</a>
+                            </nav>
+                        </div>
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSchedule" aria-expanded="false" aria-controls="collapseSchedule">
                             <div class="sb-nav-link-icon"><i class="fa-solid fa-cart-shopping"></i></div>
                             Quản lý đơn hàng

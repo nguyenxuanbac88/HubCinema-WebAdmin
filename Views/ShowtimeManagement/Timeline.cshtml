@@ -1,0 +1,301 @@
+﻿@{
+    ViewData["Title"] = "Lịch chiếu theo rạp";
+    var cinemas = ViewBag.Cinemas as List<HubCinemaAdmin.Models.CinemaDTO>;
+}
+
+<div class="container py-4">
+    <h2>@ViewData["Title"]</h2>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <label for="cinemaSelect" class="form-label">Chọn rạp:</label>
+            <select id="cinemaSelect" class="form-select">
+                <option value="">-- Chọn rạp --</option>
+                @if (cinemas != null)
+                {
+                    foreach (var c in cinemas)
+                    {
+                        <option value="@c.IDCinema">@c.CinemaName</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="dateInput" class="form-label">Chọn ngày:</label>
+            <input type="date" id="dateInput" class="form-control" />
+        </div>
+    </div>
+
+    <button type="button" class="btn btn-primary" id="loadTimeline">Tải lịch chiếu</button>
+
+    <div id="timelineWrapper" class="mt-5">
+        <!-- timeline sẽ render ở đây -->
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const btn = document.getElementById('loadTimeline');
+        btn.addEventListener('click', loadTimeline);
+
+        async function loadTimeline() {
+            const cinemaId = document.getElementById('cinemaSelect').value;
+            const date = document.getElementById('dateInput').value;
+            const wrapper = document.getElementById('timelineWrapper');
+            wrapper.innerHTML = '';
+
+            if (!cinemaId || !date) {
+                alert('Vui lòng chọn rạp và ngày.');
+                return;
+            }
+
+            let res, data;
+            try {
+                res = await fetch(`/ShowtimeManagement/GetTimeline?ngay=${date}&maRap=${cinemaId}`);
+                if (!res.ok) throw new Error('API error ' + res.status);
+                data = await res.json();
+            } catch (err) {
+                wrapper.innerHTML = `<div class="alert alert-danger">Không có lịch chiếu. </div>`;
+                return;
+            }
+
+            if (!Array.isArray(data) || data.length === 0) {
+                wrapper.innerHTML = `<div class="alert alert-warning">Không có lịch chiếu.</div>`;
+                return;
+            }
+
+            renderGantt(wrapper, data, date);
+        }
+
+        /**
+         * data: [{id,name,start,end,resource}]
+         * container: element để render
+         */
+        function renderGantt(container, data, dateStr) {
+            // Parse & normalize
+            const items = data.map(x => ({
+                id: x.id,
+                name: x.name,
+                resource: x.resource || 'Không rõ phòng',
+                start: new Date(x.start),
+                end: new Date(x.end)
+            }));
+
+            // Giới hạn trong ngày được chọn: nếu API trả cả khác ngày thì cắt
+            const dayStart = new Date(dateStr + 'T00:00:00');
+            const dayEnd = new Date(dateStr + 'T23:59:59');
+
+            // Lấy min/max (clamp vào trong ngày)
+            let minTime = dayEnd, maxTime = dayStart;
+            for (const it of items) {
+                const s = it.start < dayStart ? dayStart : it.start;
+                const e = it.end   > dayEnd   ? dayEnd   : it.end;
+                if (s < minTime) minTime = s;
+                if (e > maxTime) maxTime = e;
+                // ghi lại clamp để dùng sau
+                it._startClamped = s;
+                it._endClamped = e;
+            }
+
+            // Nếu tất cả nằm cùng 1 giờ -> mở rộng thêm 1h hai đầu cho dễ xem
+            if (maxTime - minTime < 60*60*1000) {
+                minTime = new Date(minTime.getTime() - 30*60*1000);
+                maxTime = new Date(maxTime.getTime() + 30*60*1000);
+            }
+
+            const totalMs = maxTime - minTime;
+
+            // Group theo phòng
+            const byRoom = {};
+            for (const it of items) {
+                if (!byRoom[it.resource]) byRoom[it.resource] = [];
+                byRoom[it.resource].push(it);
+            }
+
+            // ----- BUILD DOM -----
+            const scaleEl = buildTimeScale(minTime, maxTime);
+            const rowsEl = document.createElement('div');
+            rowsEl.className = 'g-rows';
+
+            Object.keys(byRoom).forEach(roomName => {
+                const rowEl = document.createElement('div');
+                rowEl.className = 'g-row';
+
+                const labelEl = document.createElement('div');
+                labelEl.className = 'g-row-label';
+                labelEl.textContent = roomName;
+                rowEl.appendChild(labelEl);
+
+                const trackEl = document.createElement('div');
+                trackEl.className = 'g-row-track';
+
+                // bars
+                byRoom[roomName].forEach(it => {
+                    const startPct = ((it._startClamped - minTime) / totalMs) * 100;
+                    const widthPct = ((it._endClamped - it._startClamped) / totalMs) * 100;
+
+                    const barEl = document.createElement('div');
+                    barEl.className = 'g-bar';
+                    barEl.style.left = startPct + '%';
+                    barEl.style.width = widthPct + '%';
+                    barEl.title = `${it.name}\n${fmtTime(it.start)} - ${fmtTime(it.end)}`;
+                    barEl.innerHTML = `
+                        <span class="g-bar-text">${it.name}</span>
+                        <span class="g-bar-time">${fmtTime(it.start)}-${fmtTime(it.end)}</span>
+                    `;
+                    trackEl.appendChild(barEl);
+                });
+
+                rowEl.appendChild(trackEl);
+                rowsEl.appendChild(rowEl);
+            });
+
+            container.appendChild(scaleEl);
+            container.appendChild(rowsEl);
+        }
+
+        function buildTimeScale(minTime, maxTime) {
+            const el = document.createElement('div');
+            el.className = 'g-scale';
+
+            // tạo mốc giờ tròn
+            const startHour = minTime.getHours() + (minTime.getMinutes() > 0 ? 1 : 0); // làm tròn lên
+            const endHour = maxTime.getHours() + 1; // làm tròn lên
+            const totalMs = maxTime - minTime;
+
+            // nhãn trái (trống cho align label cột phòng)
+            const labelSpacer = document.createElement('div');
+            labelSpacer.className = 'g-scale-label-spacer';
+            el.appendChild(labelSpacer);
+
+            const track = document.createElement('div');
+            track.className = 'g-scale-track';
+
+            for (let h = startHour; h <= endHour; h++) {
+                const tickTime = new Date(minTime);
+                tickTime.setHours(h, 0, 0, 0);
+                // clamp
+                if (tickTime < minTime) continue;
+                if (tickTime > maxTime) break;
+
+                const pct = ((tickTime - minTime) / totalMs) * 100;
+
+                const tick = document.createElement('div');
+                tick.className = 'g-scale-tick';
+                tick.style.left = pct + '%';
+                tick.textContent = h.toString().padStart(2, '0') + ':00';
+                track.appendChild(tick);
+            }
+            el.appendChild(track);
+            return el;
+        }
+
+        function fmtTime(dt) {
+            return dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+    </script>
+
+    <style>
+        /* tổng wrapper */
+        #timelineWrapper {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            position: relative;
+            font-size: 14px;
+        }
+
+        /* thước thời gian */
+        .g-scale {
+            position: relative;
+            display: flex;
+            width: 100%;
+            margin-bottom: .5rem;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .g-scale-label-spacer {
+            width: 160px; /* cùng độ rộng label phòng */
+            flex: 0 0 auto;
+        }
+
+        .g-scale-track {
+            position: relative;
+            flex: 1 1 auto;
+            height: 20px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .g-scale-tick {
+            position: absolute;
+            transform: translateX(-50%);
+            bottom: 0;
+            white-space: nowrap;
+        }
+
+        /* vùng hàng */
+        .g-rows {
+            width: 100%;
+        }
+
+        .g-row {
+            display: flex;
+            width: 100%;
+            min-height: 48px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .g-row-label {
+            width: 160px;
+            flex: 0 0 auto;
+            padding: 8px;
+            background: #f8f9fa;
+            border-right: 1px solid #e0e0e0;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 32px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .g-row-track {
+            position: relative;
+            flex: 1 1 auto;
+            background: #fff;
+        }
+
+        /* thanh phim */
+        .g-bar {
+            position: absolute;
+            top: 4px;
+            height: 32px;
+            background: #8ec5ff;
+            border: 1px solid #4a86c5;
+            border-radius: 4px;
+            padding: 2px 4px;
+            box-sizing: border-box;
+            overflow: hidden;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .g-bar-text {
+            font-weight: 600;
+            font-size: 12px;
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .g-bar-time {
+            font-size: 11px;
+            line-height: 1.1;
+        }
+    </style>
+}

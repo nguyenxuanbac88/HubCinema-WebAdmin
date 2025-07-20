@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using HubCinemaAdmin.Models;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace HubCinemaAdmin.Controllers
 {
@@ -39,12 +40,35 @@ namespace HubCinemaAdmin.Controllers
             return View(newsList);
         }
 
-        // ✅ Trang tạo bài viết
+        //Trang tạo bài viết
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var categoryResponse = await _httpClient.GetAsync("http://api.dvxuanbac.com:2030/api/News/categories");
+            if (categoryResponse.IsSuccessStatusCode)
+            {
+                var json = await categoryResponse.Content.ReadAsStringAsync();
+                var categories = JsonSerializer.Deserialize<List<Category>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                ViewBag.Categories = categories
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Name
+                    }).ToList();
+            }
+            else
+            {
+                ViewBag.Categories = new List<SelectListItem>();
+                ViewBag.Error = "Không thể tải danh mục!";
+            }
+
             return View();
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Create(News news)
@@ -57,8 +81,27 @@ namespace HubCinemaAdmin.Controllers
                 return RedirectToAction("Index");
             }
 
+            // Nạp lại danh sách Category khi lỗi
+            var categoryResponse = await _httpClient.GetAsync("http://api.dvxuanbac.com:2030/api/News/categories");
+            if (categoryResponse.IsSuccessStatusCode)
+            {
+                var json = await categoryResponse.Content.ReadAsStringAsync();
+                var categories = JsonSerializer.Deserialize<List<Category>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                ViewBag.Categories = categories
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Name
+                    }).ToList();
+            }
+
             ViewBag.Error = "Tạo bài viết thất bại!";
             return View(news);
         }
+
     }
 }

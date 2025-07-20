@@ -11,5 +11,9 @@
         public string? Status { get; set; }
         public int Category { get; set; } = 1; // tạm set cứng nếu chưa có select
     }
-
+    public class Category
+    {
+        public long Id { get; set; }
+        public string Name { get; set; } = "";
+    }
 }

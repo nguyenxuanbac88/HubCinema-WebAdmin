@@ -1,4 +1,4 @@
-﻿@model HubCinemaAdmin.Models.News
+﻿@model HubCinemaAdmin.Models.NewsCreateDTO
 
 @{
     ViewData["Title"] = "Tạo bài viết mới";
@@ -33,11 +33,14 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Thumbnail (upload ảnh)</label>
-                    <input type="file" name="thumbnailFile" class="form-control" accept="image/*" />
+                    <label class="form-label">Upload ảnh Thumbnail</label>
+                    <input asp-for="ThumbnailFile" type="file" class="form-control" accept="image/*" />
                 </div>
 
-                <input type="hidden" asp-for="Thumbnail" />
+                <div class="mb-3">
+                    <label class="form-label">Hoặc nhập link ảnh Thumbnail</label>
+                    <input asp-for="ThumbnailUrl" type="text" class="form-control" placeholder="https://example.com/image.jpg" />
+                </div>
 
                 <div class="mb-3">
                     <label asp-for="Status" class="form-label">Trạng thái</label>
@@ -47,13 +50,12 @@
                     </select>
                 </div>
 
-                <!-- ✅ Thêm phần chọn danh mục -->
                 <div class="mb-3">
                     <label class="form-label">Danh mục</label>
-                    <select asp-for="Category" class="form-select" asp-items="ViewBag.Categories">
+                    <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories">
                         <option value="">-- Chọn danh mục --</option>
                     </select>
-                    <span asp-validation-for="Category" class="text-danger"></span>
+                    <span asp-validation-for="CategoryId" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">

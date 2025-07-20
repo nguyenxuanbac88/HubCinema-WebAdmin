@@ -26,6 +26,7 @@
                     <th>@Html.DisplayNameFor(model => firstItem.Director)</th>
                     <th>@Html.DisplayNameFor(model => firstItem.AgeRestriction)</th>
                     <th>@Html.DisplayNameFor(model => firstItem.ReleaseDate)</th>
+                    <th>@Html.DisplayNameFor(model => firstItem.EndDate)</th>
                     <th>Thao tác</th>
                 </tr>
             </thead>
@@ -55,12 +56,18 @@
                             </span>
                         </td>
                         <td>
+                            <span class="badge bg-light text-secondary border border-secondary">
+                                @(item.EndDate.HasValue ? item.EndDate.Value.ToString("dd-MM-yyyy") : "Chưa xác định")
+                            </span>
+                        </td>
+                        <td>
                             <a asp-action="EditMovie" asp-route-id="@item.IDMovie" class="btn btn-sm btn-info">Chi tiết</a>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
+
         <nav aria-label="Pagination">
             <ul class="pagination justify-content-center mt-3">
                 @if (ViewBag.CurrentPage > 1)
@@ -85,6 +92,5 @@
                 }
             </ul>
         </nav>
-
     </div>
 </div>

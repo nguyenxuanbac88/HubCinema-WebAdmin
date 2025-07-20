@@ -15,7 +15,7 @@ namespace HubCinemaAdmin.Models
         public string Description { get; set; }
         [Display(Name = "Đạo diễn")]
         public string Director { get; set; }
-        [Display(Name = "Ngày phát hành")]
+        [Display(Name = "Ngày khởi chiếu")]
         public DateTime ReleaseDate { get; set; }
         public string CoverURL { get; set; }
         public string TrailerURL { get; set; }
@@ -25,5 +25,7 @@ namespace HubCinemaAdmin.Models
         public string Producer { get; set; }
         [Display(Name = "Diễn viên")]
         public string Actors { get; set; }
+        [Display(Name = "Ngày kết thúc")]
+        public DateTime? EndDate { get; set; }
     }
 }

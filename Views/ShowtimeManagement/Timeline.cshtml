@@ -27,7 +27,52 @@
     </div>
 
     <button type="button" class="btn btn-primary" id="loadTimeline">Tải lịch chiếu</button>
-
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addShowtimeModal">
+        Thêm lịch chiếu
+    </button>
+    <div class="modal fade" id="addShowtimeModal" tabindex="-1" aria-labelledby="addShowtimeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="addShowtimeForm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addShowtimeModalLabel">Thêm lịch chiếu mới</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Rạp</label>
+                            <select name="CinemaId" class="form-control" required>
+                                @foreach (var cinema in ViewBag.Cinemas as List<HubCinemaAdmin.Models.CinemaDTO>)
+                                {
+                                    <option value="@cinema.IDCinema">@cinema.CinemaName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ngày chiếu</label>
+                            <input type="date" name="NgayChieu" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tên phim</label>
+                            <input type="text" name="TenPhim" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Thời gian bắt đầu</label>
+                            <input type="time" name="ThoiGianBatDau" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Thời gian kết thúc</label>
+                            <input type="time" name="ThoiGianKetThuc" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Lưu</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
     <div id="timelineWrapper" class="mt-5">
         <!-- timeline sẽ render ở đây -->
     </div>

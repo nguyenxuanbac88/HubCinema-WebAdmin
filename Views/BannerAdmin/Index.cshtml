@@ -1,0 +1,87 @@
+﻿@model List<HubCinemaAdmin.Models.Banner>
+
+@{
+    ViewData["Title"] = "Quản lý Banner";
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">Quản lý Banner</h2>
+        <a asp-action="Create" class="btn btn-success shadow">
+            <i class="fas fa-plus me-1"></i> Thêm banner mới
+        </a>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-warning">Không có banner nào được tìm thấy.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle shadow-sm">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th scope="col">STT</th>
+                        <th scope="col">Tiêu đề</th>
+                        <th scope="col">Ảnh</th>
+                        <th scope="col">Link</th>
+                        <th scope="col">Thứ tự</th>
+                        <th scope="col">Trạng thái</th>
+                        <th scope="col">Ngày tạo</th>
+                        <th scope="col">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var banner = Model[i];
+                        <tr class="text-center">
+                            <td>@(i + 1)</td>
+                            <td class="text-start">@banner.Title</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(banner.ImageUrl))
+                                {
+                                    <img src="@banner.ImageUrl" class="img-thumbnail" style="height: 60px;" />
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(banner.LinkUrl))
+                                {
+                                    <a href="@banner.LinkUrl" target="_blank" class="text-decoration-none">
+                                        <i class="fas fa-link"></i> Mở link
+                                    </a>
+                                }
+                            </td>
+                            <td>@banner.DisplayOrder</td>
+                            <td>
+                                @if (banner.IsActive)
+                                {
+                                    <span class="badge bg-success px-3 py-2">Hiển thị</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary px-3 py-2">Ẩn</span>
+                                }
+                            </td>
+                            <td>@banner.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@banner.BannerId" class="btn btn-sm btn-outline-primary me-1">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@banner.BannerId" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa banner này không?');">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

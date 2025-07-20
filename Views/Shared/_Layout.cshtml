@@ -83,6 +83,21 @@
                                 <a class="nav-link" asp-controller="FoodManagement" asp-action="CreateFood">Tạp combo</a>
                             </nav>
                         </div>
+
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseNews" aria-expanded="false" aria-controls="collapseNews">
+                            <div class="sb-nav-link-icon"><i class="fa-solid fa-newspaper"></i></div>
+                            Quản lý bài viết
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="collapseNews">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" asp-controller="NewsManagement" asp-action="index">Danh sách bài viết</a>
+                                <a class="nav-link" asp-controller="NewsManagement" asp-action="Create">Tạo bài viết</a>
+                            </nav>
+                        </div>
+
+
+  
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSchedule" aria-expanded="false" aria-controls="collapseSchedule">
                             <div class="sb-nav-link-icon"><i class="fa-solid fa-display"></i></div>
                             Quản lý suất chiếu
@@ -109,6 +124,17 @@
                             <div class="sb-nav-link-icon"><i class="fa-solid fa-users"></i></div>
                             Quản lý người dùng
                         </a>
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseBanner" aria-expanded="false" aria-controls="collapseBanner">
+                            <div class="sb-nav-link-icon"><i class="fa-solid fa-image"></i></div>
+                            Quản lý banner
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="collapseBanner">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" asp-area="Admin" asp-controller="BannerAdmin" asp-action="Index">Danh sách banner</a>
+                                <a class="nav-link" asp-area="Admin" asp-controller="BannerAdmin" asp-action="Create">Tạo banner</a>
+                            </nav>
+                        </div>
                     </div>
                 </div>
             </nav>

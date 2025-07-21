@@ -2,18 +2,17 @@
 using HubCinemaAdmin.Models;
 using HubCinemaAdmin.Services;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 
 namespace HubCinemaAdmin.Controllers
 {
     public class CinemaManagementController : BaseController
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly CinemaService _cinemaService;
         private readonly IRoomService _roomService;
 
-        public CinemaManagementController(IHttpClientFactory httpClientFactory, IRoomService roomService)
+        public CinemaManagementController(IHttpClientFactory httpClientFactory, IRoomService roomService, IHttpContextAccessor contextAccessor)
         {
-            _httpClientFactory = httpClientFactory;
+            _cinemaService = new CinemaService(httpClientFactory, contextAccessor);
             _roomService = roomService;
         }
 
@@ -31,10 +30,9 @@ namespace HubCinemaAdmin.Controllers
             if (!IsAuthenticated)
                 return RedirectToAction("Login", "Auth");
 
-            var client = CreateAuthorizedClient(_httpClientFactory);
-            var response = await client.PostAsJsonAsync(LinkHost.Url + "/Admin/CreateCinema", cinemaDTO);
+            var success = await _cinemaService.CreateCinemaAsync(cinemaDTO);
 
-            if (response.IsSuccessStatusCode)
+            if (success)
             {
                 TempData["Success"] = "Tạo rạp chiếu thành công!";
                 return RedirectToAction("LoadListCinema");
@@ -46,18 +44,16 @@ namespace HubCinemaAdmin.Controllers
 
         public async Task<IActionResult> LoadListCinema()
         {
-            var client = _httpClientFactory.CreateClient();
-            var response = await client.GetAsync(LinkHost.Url + "/Public/GetCinemas");
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var jsonString = await response.Content.ReadAsStringAsync();
-                var cinemas = JsonConvert.DeserializeObject<List<CinemaDTO>>(jsonString);
+                var cinemas = await _cinemaService.GetCinemasAsync();
                 return View(cinemas);
             }
-
-            TempData["Error"] = "Không thể tải danh sách rạp chiếu!";
-            return View(new List<CinemaDTO>());
+            catch (Exception)
+            {
+                TempData["Error"] = "Không thể tải danh sách rạp chiếu!";
+                return View(new List<CinemaDTO>());
+            }
         }
 
         public async Task<IActionResult> EditCinema(int id)
@@ -65,13 +61,7 @@ namespace HubCinemaAdmin.Controllers
             if (!IsAuthenticated)
                 return RedirectToAction("Login", "Auth");
 
-            var client = CreateAuthorizedClient(_httpClientFactory);
-            var response = await client.GetAsync(LinkHost.Url + $"/Public/GetCinemaById/{id}");
-
-            if (!response.IsSuccessStatusCode)
-                return RedirectToAction("LoadListCinema");
-
-            var cinema = await response.Content.ReadFromJsonAsync<CinemaDTO>();
+            var cinema = await _cinemaService.GetCinemaByIdAsync(id);
             if (cinema == null)
                 return RedirectToAction("LoadListCinema");
 
@@ -94,10 +84,9 @@ namespace HubCinemaAdmin.Controllers
                 return View(cinemaDTO);
             }
 
-            var authorizedClient = CreateAuthorizedClient(_httpClientFactory);
-            var response = await authorizedClient.PutAsJsonAsync(LinkHost.Url + $"/Admin/UpdateCinema/{cinemaDTO.IDCinema}", cinemaDTO);
+            var success = await _cinemaService.UpdateCinemaAsync(cinemaDTO);
 
-            if (response.IsSuccessStatusCode)
+            if (success)
             {
                 TempData["Success"] = "Cập nhật rạp chiếu thành công!";
                 return RedirectToAction("LoadListCinema");

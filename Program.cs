@@ -9,6 +9,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ShowtimeService>();
 
 
 builder.Services.AddSession(options =>

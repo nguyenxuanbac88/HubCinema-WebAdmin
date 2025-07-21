@@ -27,5 +27,7 @@ namespace HubCinemaAdmin.Models
         public string Actors { get; set; }
         [Display(Name = "Ngày kết thúc")]
         public DateTime? EndDate { get; set; }
+
+        public int status { get; set; } // 0: Đang chiếu, 1: Sắp chiếu, 2: Ngừng chiếu
     }
 }

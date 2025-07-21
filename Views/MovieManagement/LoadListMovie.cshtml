@@ -27,6 +27,7 @@
                     <th>@Html.DisplayNameFor(model => firstItem.AgeRestriction)</th>
                     <th>@Html.DisplayNameFor(model => firstItem.ReleaseDate)</th>
                     <th>@Html.DisplayNameFor(model => firstItem.EndDate)</th>
+                    <th>Trạng thái</th> <!-- Cột mới -->
                     <th>Thao tác</th>
                 </tr>
             </thead>
@@ -59,6 +60,23 @@
                             <span class="badge bg-light text-secondary border border-secondary">
                                 @(item.EndDate.HasValue ? item.EndDate.Value.ToString("dd-MM-yyyy") : "Chưa xác định")
                             </span>
+                        </td>
+                        <td>
+                            @switch (item.status)
+                            {
+                                case 0:
+                                    @:<span class="badge bg-warning text-dark">Sắp chiếu</span>
+                                    break;
+                                case 1:
+                                    @:<span class="badge bg-success text-white">Đang chiếu</span>
+                                    break;
+                                case 2:
+                                    @:<span class="badge bg-secondary text-white">Ngừng chiếu</span>
+                                    break;
+                                default:
+                                    @:<span class="badge bg-light text-muted">Không rõ</span>
+                                    break;
+                            }
                         </td>
                         <td>
                             <a asp-action="EditMovie" asp-route-id="@item.IDMovie" class="btn btn-sm btn-info">Chi tiết</a>

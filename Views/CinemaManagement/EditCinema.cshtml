@@ -94,10 +94,15 @@
                                 </span>
                             </td>
                             <td class="text-center">
-                                <a href="#" class="btn btn-sm btn-info text-white disabled" title="Tính năng đang phát triển">
-                                    <i class="bi bi-eye-fill me-1"></i>Chi tiết
+                                <a asp-controller="SeatLayout"
+                                   asp-action="Create"
+                                   asp-route-idRoom="@room.IDRoom"
+                                   asp-route-maRap="@Model.IDCinema"
+                                   class="btn btn-sm btn-info text-white"
+                                   title="Xem chi tiết">
+                                    <i class="bi bi-eye-fill me-1"></i>Ghế
                                 </a>
-                                @* Có thể thêm nút Xoá hoặc Sửa tại đây sau *@
+
                             </td>
                         </tr>
                     }

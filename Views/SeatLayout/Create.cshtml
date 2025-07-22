@@ -1,0 +1,215 @@
+﻿@model HubCinemaAdmin.Models.CustomSeatLayoutViewModel
+
+@{
+    ViewData["Title"] = "Tạo Ma Trận Ghế";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="mb-4 fw-bold text-primary">Tạo Ma Trận Ghế</h2>
+
+<div class="d-flex align-items-end gap-3 flex-wrap mb-4">
+    <div>
+        <label for="rows" class="form-label">Số hàng:</label>
+        <input type="number" id="rows" class="form-control" placeholder="VD: 10" style="width:120px;" />
+    </div>
+
+    <div>
+        <label for="cols" class="form-label">Số cột:</label>
+        <input type="number" id="cols" class="form-control" placeholder="VD: 16" style="width:120px;" />
+    </div>
+
+    <div>
+        <button id="generateMatrix" class="btn btn-success mt-3">Tạo ma trận</button>
+    </div>
+</div>
+
+<div class="seat-grid mb-4" id="seatMatrix"></div>
+
+<div class="screen-wrapper">
+    <div class="screen">Màn hình</div>
+</div>
+
+<form asp-action="Create" method="post" class="mt-4">
+    <input type="hidden" asp-for="IdRoom" />
+    <input type="hidden" asp-for="LayoutJson" id="LayoutJson" />
+
+    <div id="seatTypeConfig" style="display:none">
+        <h4 class="mb-3 text-secondary">Cấu hình loại ghế theo hàng:</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered bg-white text-dark">
+                <thead class="table-light">
+                    <tr>
+                        <th>Hàng ghế (A-Z)</th>
+                        <th>Loại ghế</th>
+                        <th>Giá (VND)</th>
+                    </tr>
+                </thead>
+                <tbody id="seatTypeRows">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <input type="hidden" asp-for="MaRap" value="@Model.MaRap" />
+    <button type="submit" class="btn btn-primary">Lưu Ma Trận Ghế</button>
+</form>
+
+<style>
+    .seat-grid {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .seat-row {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .seat {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 2px solid #ccc;
+        background-color: white;
+        font-size: 14px;
+        text-align: center;
+        line-height: 32px;
+        cursor: pointer;
+        user-select: none;
+        transition: 0.2s;
+    }
+
+        .seat.selected {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: black;
+        }
+
+    .row-label {
+        width: 24px;
+        font-weight: bold;
+        text-align: center;
+        color: #555;
+    }
+
+    .screen-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+
+    .screen {
+        width: 60%;
+        height: 8px;
+        background: linear-gradient(to right, #f90, #f90);
+        border-radius: 4px;
+        position: relative;
+    }
+
+        .screen::after {
+            content: "Màn hình";
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: #888;
+        }
+</style>
+
+@section Scripts {
+    <script>
+        function createMatrix(rows, cols) {
+            const seatMatrix = document.getElementById("seatMatrix");
+            const seatTypeRows = document.getElementById("seatTypeRows");
+            seatMatrix.innerHTML = "";
+            seatTypeRows.innerHTML = "";
+
+            for (let r = 0; r < rows; r++) {
+                const rowDiv = document.createElement("div");
+                rowDiv.classList.add("seat-row");
+
+                const rowLabel = String.fromCharCode(65 + r);
+                const labelLeft = document.createElement("div");
+                labelLeft.classList.add("row-label");
+                labelLeft.textContent = rowLabel;
+                rowDiv.appendChild(labelLeft);
+
+                for (let c = 0; c < cols; c++) {
+                    const seat = document.createElement("div");
+                    seat.classList.add("seat");
+
+                    const seatName = `${rowLabel}${c + 1}`;
+                    seat.textContent = c + 1;
+                    seat.dataset.name = seatName;
+
+                    seat.addEventListener("click", () => {
+                        seat.classList.toggle("selected");
+                        updateLayoutJson();
+                    });
+
+                    rowDiv.appendChild(seat);
+                }
+
+                const labelRight = document.createElement("div");
+                labelRight.classList.add("row-label");
+                labelRight.textContent = rowLabel;
+                rowDiv.appendChild(labelRight);
+
+                seatMatrix.appendChild(rowDiv);
+
+                // Render row config dynamically
+                const index = r;
+                seatTypeRows.innerHTML += `
+                    <tr>
+                        <td>${rowLabel}</td>
+                        <td>
+                            <select name="SeatTypeRows[${index}].LoaiGhe" class="form-select form-select-sm">
+                                <option value="Thường">Thường</option>
+                                <option value="VIP">VIP</option>
+                                <option value="Đôi">Đôi</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="hidden" name="SeatTypeRows[${index}].MaGhe" value="${rowLabel}" />
+                            <input type="number" name="SeatTypeRows[${index}].Gia" class="form-control form-control-sm" value="15000" />
+                        </td>
+                    </tr>`;
+            }
+
+            updateLayoutJson();
+            document.getElementById("seatTypeConfig").style.display = "block";
+        }
+
+        function updateLayoutJson() {
+            const seatRows = document.querySelectorAll(".seat-row");
+            const layout = [];
+
+            seatRows.forEach(row => {
+                const rowData = [];
+                row.querySelectorAll(".seat").forEach(seat => {
+                    if (seat.classList.contains("selected")) {
+                        rowData.push(seat.dataset.name);
+                    } else {
+                        rowData.push(null);
+                    }
+                });
+                layout.push(rowData);
+            });
+
+            document.getElementById("LayoutJson").value = JSON.stringify(layout);
+        }
+
+        document.getElementById("generateMatrix").addEventListener("click", function () {
+            const rows = parseInt(document.getElementById("rows").value);
+            const cols = parseInt(document.getElementById("cols").value);
+            if (rows > 0 && cols > 0) {
+                createMatrix(rows, cols);
+            }
+        });
+    </script>
+}

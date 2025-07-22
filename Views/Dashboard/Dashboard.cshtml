@@ -1,110 +1,209 @@
-﻿@model HubCinemaAdmin.Models.AdminDashboardViewModel
+﻿@using System.Text.Json
+
+@model HubCinemaAdmin.Models.AdminDashboardViewModel
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 }
-<div id="layoutSidenav_content">
-    <main>
-        <div class="container-fluid px-4">
-            <h1 class="mt-4">Dashboard</h1>
-            <ol class="breadcrumb mb-4">
-                <li class="breadcrumb-item active">Tổng quan hệ thống</li>
-            </ol>
+    <div id="layoutSidenav_content">
+        <main>
+            <div class="container-fluid px-4">
+                <h1 class="mt-4">Dashboard</h1>
+                <ol class="breadcrumb mb-4">
+                    <li class="breadcrumb-item active">Tổng quan hệ thống</li>
+                </ol>
 
-            <div class="row">
-                <div class="col-xl-3 col-md-6">
-                    <div class="card bg-primary text-white mb-4">
-                        <div class="card-body">Vé bán hôm nay: <strong>@Model.TicketsToday</strong></div>
-                        <div class="card-footer d-flex align-items-center justify-content-between">
-                            <span class="small text-white">Hôm nay</span>
-                            <i class="fas fa-ticket-alt text-white"></i>
+                <div class="row">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card bg-primary text-white mb-4">
+                            <div class="card-body">Vé bán hôm nay: <strong>@Model.Summary.TicketsToday</strong></div>
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <span class="small text-white">Hôm nay</span>
+                                <i class="fas fa-ticket-alt text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card bg-warning text-white mb-4">
+                            <div class="card-body">Vé tháng này: <strong>@Model.Summary.TicketsThisMonth</strong></div>
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <span class="small text-white">Trong tháng</span>
+                                <i class="fas fa-calendar-alt text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card bg-success text-white mb-4">
+                            <div class="card-body">Phim đang chiếu: <strong>@Model.Summary.CurrentMovies</strong></div>
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <span class="small text-white">Hiện tại</span>
+                                <i class="fas fa-film text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card bg-danger text-white mb-4">
+                            <div class="card-body">Tổng người dùng: <strong>@Model.Summary.TotalUsers</strong></div>
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <span class="small text-white">Người dùng</span>
+                                <i class="fas fa-users text-white"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-xl-3 col-md-6">
-                    <div class="card bg-warning text-white mb-4">
-                        <div class="card-body">Vé tháng này: <strong>@Model.TicketsThisMonth</strong></div>
-                        <div class="card-footer d-flex align-items-center justify-content-between">
-                            <span class="small text-white">Trong tháng</span>
-                            <i class="fas fa-calendar-alt text-white"></i>
+                <div class="row">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card bg-info text-white mb-4">
+                            <div class="card-body">Vé năm nay: <strong>@Model.Summary.TicketsThisYear</strong></div>
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <span class="small text-white">Năm hiện tại</span>
+                                <i class="fas fa-chart-line text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card bg-secondary text-white mb-4">
+                            <div class="card-body">Phim sắp chiếu: <strong>@Model.Summary.UpcomingMovies</strong></div>
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <span class="small text-white">Sắp chiếu</span>
+                                <i class="fas fa-hourglass-half text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card bg-dark text-white mb-4">
+                            <div class="card-body">Rạp hoạt động: <strong>@Model.Summary.ActiveCinemas</strong></div>
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <span class="small text-white">Toàn hệ thống</span>
+                                <i class="fas fa-building text-white"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-xl-3 col-md-6">
-                    <div class="card bg-success text-white mb-4">
-                        <div class="card-body">Phim đang chiếu: <strong>@Model.CurrentMovies</strong></div>
-                        <div class="card-footer d-flex align-items-center justify-content-between">
-                            <span class="small text-white">Hiện tại</span>
-                            <i class="fas fa-film text-white"></i>
+                <!-- Chart placeholder (có thể update để dùng real data nếu muốn) -->
+                <div class="row">
+                    <div class="col-xl-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <i class="fas fa-chart-area me-1"></i>
+                                Vé bán theo ngày
+                            </div>
+                            <div class="card-body"><canvas id="myAreaChart" width="100%" height="40"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="col-xl-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <i class="fas fa-chart-bar me-1"></i>
+                                Vé theo rạp
+                            </div>
+                            <div class="card-body"><canvas id="myBarChart" width="100%" height="40"></canvas></div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-xl-3 col-md-6">
-                    <div class="card bg-danger text-white mb-4">
-                        <div class="card-body">Tổng người dùng: <strong>@Model.TotalUsers</strong></div>
-                        <div class="card-footer d-flex align-items-center justify-content-between">
-                            <span class="small text-white">Người dùng</span>
-                            <i class="fas fa-users text-white"></i>
-                        </div>
-                    </div>
-                </div>
             </div>
+        </main>
+    </div>
+   <!-- CHART.JS CDN -->
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Dữ liệu vé theo ngày
+        const dailyLabels = @Html.Raw(Json.Serialize(Model.DailySales.Select(d => d.Label)));
+        const dailyValues = @Html.Raw(Json.Serialize(Model.DailySales.Select(d => d.Value)));
 
-            <div class="row">
-                <div class="col-xl-3 col-md-6">
-                    <div class="card bg-info text-white mb-4">
-                        <div class="card-body">Vé năm nay: <strong>@Model.TicketsThisYear</strong></div>
-                        <div class="card-footer d-flex align-items-center justify-content-between">
-                            <span class="small text-white">Năm hiện tại</span>
-                            <i class="fas fa-chart-line text-white"></i>
-                        </div>
-                    </div>
-                </div>
+        const ctxArea = document.getElementById('myAreaChart').getContext('2d');
+        const areaChart = new Chart(ctxArea, {
+            type: 'line',
+            data: {
+                labels: dailyLabels,
+                datasets: [{
+                    label: 'Vé đã bán mỗi ngày',
+                    data: dailyValues,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    pointBackgroundColor: 'white',
+                    pointBorderColor: 'rgba(54, 162, 235, 1)',
+                    pointHoverRadius: 6,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                layout: {
+                    padding: 10
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
 
-                <div class="col-xl-3 col-md-6">
-                    <div class="card bg-secondary text-white mb-4">
-                        <div class="card-body">Phim sắp chiếu: <strong>@Model.UpcomingMovies</strong></div>
-                        <div class="card-footer d-flex align-items-center justify-content-between">
-                            <span class="small text-white">Sắp chiếu</span>
-                            <i class="fas fa-hourglass-half text-white"></i>
-                        </div>
-                    </div>
-                </div>
+        // Dữ liệu vé theo rạp
+        const cinemaLabels = @Html.Raw(Json.Serialize(Model.CinemaSales.Select(c => c.Label)));
+        const cinemaValues = @Html.Raw(Json.Serialize(Model.CinemaSales.Select(c => c.Value)));
 
-                <div class="col-xl-3 col-md-6">
-                    <div class="card bg-dark text-white mb-4">
-                        <div class="card-body">Rạp hoạt động: <strong>@Model.ActiveCinemas</strong></div>
-                        <div class="card-footer d-flex align-items-center justify-content-between">
-                            <span class="small text-white">Toàn hệ thống</span>
-                            <i class="fas fa-building text-white"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bạn có thể giữ nguyên phần chart ở dưới nếu cần -->
-            <div class="row">
-                <div class="col-xl-6">
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <i class="fas fa-chart-area me-1"></i>
-                            Area Chart (demo)
-                        </div>
-                        <div class="card-body"><canvas id="myAreaChart" width="100%" height="40"></canvas></div>
-                    </div>
-                </div>
-                <div class="col-xl-6">
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <i class="fas fa-chart-bar me-1"></i>
-                            Bar Chart (demo)
-                        </div>
-                        <div class="card-body"><canvas id="myBarChart" width="100%" height="40"></canvas></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-</div>
+        const ctxBar = document.getElementById('myBarChart').getContext('2d');
+        const barChart = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: cinemaLabels,
+                datasets: [{
+                    label: 'Vé bán theo rạp',
+                    data: cinemaValues,
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1,
+                    hoverBackgroundColor: 'rgba(255, 99, 132, 0.8)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    }

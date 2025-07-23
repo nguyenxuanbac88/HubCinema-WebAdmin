@@ -1,0 +1,66 @@
+﻿@model List<InvoiceAdminViewModel>
+
+<h2 class="mb-4 fw-bold text-primary">Danh sách hóa đơn</h2>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle text-center">
+        <thead class="table-dark text-uppercase">
+            <tr>
+                <th>#</th>
+                <th>Ngày tạo</th>
+                <th>Phim</th>
+                <th>Suất chiếu</th>
+                <th>Phòng</th>
+                <th>Ghế</th>
+                <th>Combo</th>
+                <th>Tổng tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var invoice in Model)
+            {
+                <tr>
+                    <td>@invoice.IdInvoice</td>
+                    <td>@invoice.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="fw-semibold">@invoice.MovieName</td>
+                    <td>
+                        @invoice.NgayChieu.ToString("dd/MM")<br />
+                        <span class="badge bg-info text-dark">@invoice.GioChieu</span>
+                    </td>
+                    <td><span class="text-primary">@invoice.Room</span></td>
+                    <td>
+                        @if (invoice.Seats != null && invoice.Seats.Any())
+                        {
+                            @Html.Raw(string.Join(" ", invoice.Seats.Select(seat =>
+                                     $"<span class='badge bg-secondary me-1'>{seat}</span>"
+                                     )))
+                        }
+                        else
+                        {
+                            <span class="text-muted fst-italic">Không có</span>
+                        }
+                    </td>
+
+                    <td>
+                        @if (invoice.Foods != null && invoice.Foods.Any())
+                        {
+                            foreach (var item in invoice.Foods)
+                            {
+                                <div class="mb-1">
+                                    <span class="badge bg-warning text-dark">
+                                        @item.FoodName × @item.Quantity
+                                    </span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted fst-italic">Không có</span>
+                        }
+                    </td>
+                    <td class="fw-bold text-danger">@invoice.TotalPrice.ToString("N0") đ</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -97,7 +97,7 @@
                         </div>
 
 
-  
+                        <!-- Quản lý suất chiếu -->
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSchedule" aria-expanded="false" aria-controls="collapseSchedule">
                             <div class="sb-nav-link-icon"><i class="fa-solid fa-display"></i></div>
                             Quản lý suất chiếu
@@ -108,22 +108,55 @@
                                 <a class="nav-link" asp-controller="ShowtimeManagement" asp-action="Timeline">Timeline</a>
                             </nav>
                         </div>
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSchedule" aria-expanded="false" aria-controls="collapseSchedule">
-                            <div class="sb-nav-link-icon"><i class="fa-solid fa-cart-shopping"></i></div>
-                            Quản lý đơn hàng
+
+                        <!-- Quản lý hóa đơn -->
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseInvoice" aria-expanded="false" aria-controls="collapseInvoice">
+                            <div class="sb-nav-link-icon"><i class="fa-solid fa-file-invoice"></i></div>
+                            Quản lý hóa đơn
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSchedule" aria-expanded="false" aria-controls="collapseSchedule">
+                        <div class="collapse" id="collapseInvoice">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" asp-area="Admin" asp-controller="Invoice" asp-action="Index">Danh sách hóa đơn</a>
+                            </nav>
+                        </div>
+
+                        <!-- Quản lý giá vé -->
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseTicket" aria-expanded="false" aria-controls="collapseTicket">
                             <div class="sb-nav-link-icon"><i class="fa-solid fa-ticket"></i></div>
                             Quản lý giá vé
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSchedule" aria-expanded="false" aria-controls="collapseSchedule">
+                        <div class="collapse" id="collapseTicket">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="#">Tùy chỉnh giá vé</a>
+                            </nav>
+                        </div>
+
+                        <!-- Quản lý khuyến mãi -->
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePromo" aria-expanded="false" aria-controls="collapsePromo">
                             <div class="sb-nav-link-icon"><i class="fa-solid fa-percent"></i></div>
                             Quản lý khuyến mãi
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSchedule" aria-expanded="false" aria-controls="collapseSchedule">
+                        <div class="collapse" id="collapsePromo">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="#">Danh sách mã giảm</a>
+                            </nav>
+                        </div>
+
+                        <!-- Quản lý người dùng -->
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseUser" aria-expanded="false" aria-controls="collapseUser">
                             <div class="sb-nav-link-icon"><i class="fa-solid fa-users"></i></div>
                             Quản lý người dùng
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
+                        <div class="collapse" id="collapseUser">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="#">Danh sách người dùng</a>
+                            </nav>
+                        </div>
+
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseBanner" aria-expanded="false" aria-controls="collapseBanner">
                             <div class="sb-nav-link-icon"><i class="fa-solid fa-image"></i></div>
                             Quản lý banner

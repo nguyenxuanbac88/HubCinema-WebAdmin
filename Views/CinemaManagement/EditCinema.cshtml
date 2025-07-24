@@ -50,6 +50,12 @@
 
     <h3 class="fw-semibold mb-3 text-primary">
         <i class="bi bi-door-open-fill me-1"></i> Danh sách phòng chiếu
+        <a asp-controller="RoomManagement"
+           asp-action="CreateRoom"
+           asp-route-idCinema="@Model.IDCinema"
+           class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i> Thêm phòng chiếu
+        </a>
     </h3>
 
     @if (rooms.Any())

@@ -56,12 +56,12 @@ namespace HubCinemaAdmin.Controllers
             }
         }
 
-        public async Task<IActionResult> EditCinema(int id)
+        public async Task<IActionResult> EditCinema(int idCinema)
         {
             if (!IsAuthenticated)
                 return RedirectToAction("Login", "Auth");
 
-            var cinema = await _cinemaService.GetCinemaByIdAsync(id);
+            var cinema = await _cinemaService.GetCinemaByIdAsync(idCinema);
             if (cinema == null)
                 return RedirectToAction("LoadListCinema");
 

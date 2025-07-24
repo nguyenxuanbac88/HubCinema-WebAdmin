@@ -35,7 +35,7 @@
         <tbody>
             @foreach (var item in Model)
             {
-                <tr class="clickable-row" onclick="window.location='@Url.Action("EditCinema", "CinemaManagement", new { id = item.IDCinema })'">
+                <tr class="clickable-row" onclick="window.location='@Url.Action("EditCinema", "CinemaManagement", new { idCinema = item.IDCinema })'">
                     <td><span class="text-main">@item.CinemaName</span></td>
                     <td>@item.Address</td>
                     <td>@item.City</td>

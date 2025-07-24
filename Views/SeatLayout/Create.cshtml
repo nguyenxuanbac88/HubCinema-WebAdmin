@@ -5,21 +5,25 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2 class="mb-4 fw-bold text-primary">Tạo Ma Trận Ghế</h2>
+<h2 class="mb-4 fw-bold text-primary">🎟️ Tạo Ma Trận Ghế</h2>
 
-<div class="d-flex align-items-end gap-3 flex-wrap mb-4">
-    <div>
-        <label for="rows" class="form-label">Số hàng:</label>
-        <input type="number" id="rows" class="form-control" placeholder="VD: 10" style="width:120px;" />
-    </div>
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body d-flex align-items-end gap-4 flex-wrap">
+        <div>
+            <label for="rows" class="form-label">Số hàng:</label>
+            <input type="number" id="rows" class="form-control" placeholder="VD: 10" style="width:120px;" />
+        </div>
 
-    <div>
-        <label for="cols" class="form-label">Số cột:</label>
-        <input type="number" id="cols" class="form-control" placeholder="VD: 16" style="width:120px;" />
-    </div>
+        <div>
+            <label for="cols" class="form-label">Số cột:</label>
+            <input type="number" id="cols" class="form-control" placeholder="VD: 16" style="width:120px;" />
+        </div>
 
-    <div>
-        <button id="generateMatrix" class="btn btn-success mt-3">Tạo ma trận</button>
+        <div class="mt-auto">
+            <button id="generateMatrix" class="btn btn-success">
+                <i class="bi bi-grid-3x3-gap-fill me-1"></i> Tạo ma trận
+            </button>
+        </div>
     </div>
 </div>
 
@@ -34,24 +38,30 @@
     <input type="hidden" asp-for="LayoutJson" id="LayoutJson" />
 
     <div id="seatTypeConfig" style="display:none">
-        <h4 class="mb-3 text-secondary">Cấu hình loại ghế theo hàng:</h4>
-        <div class="table-responsive">
-            <table class="table table-bordered bg-white text-dark">
-                <thead class="table-light">
-                    <tr>
-                        <th>Hàng ghế (A-Z)</th>
-                        <th>Loại ghế</th>
-                        <th>Giá (VND)</th>
-                    </tr>
-                </thead>
-                <tbody id="seatTypeRows">
-                </tbody>
-            </table>
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h4 class="mb-3 text-secondary">⚙️ Cấu hình loại ghế theo hàng:</h4>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Hàng ghế (A-Z)</th>
+                                <th>Loại ghế</th>
+                                <th>Giá (VND)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="seatTypeRows">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
     <input type="hidden" asp-for="MaRap" value="@Model.MaRap" />
-    <button type="submit" class="btn btn-primary">Lưu Ma Trận Ghế</button>
+    <button type="submit" class="btn btn-primary mt-4">
+        <i class="bi bi-check-circle-fill me-1"></i> Lưu Ma Trận Ghế
+    </button>
 </form>
 
 <style>
@@ -59,40 +69,47 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
     }
 
     .seat-row {
         display: flex;
-        gap: 6px;
         align-items: center;
+        gap: 8px;
     }
 
     .seat {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         border-radius: 8px;
-        border: 2px solid #ccc;
-        background-color: white;
+        background-color: #f8f9fa;
+        border: 2px solid #dee2e6;
         font-size: 14px;
+        font-weight: 500;
         text-align: center;
-        line-height: 32px;
+        line-height: 36px;
         cursor: pointer;
         user-select: none;
         transition: 0.2s;
     }
 
+        .seat:hover {
+            background-color: #e2e6ea;
+            border-color: #adb5bd;
+        }
+
         .seat.selected {
             background-color: #ffc107;
             border-color: #ffc107;
             color: black;
+            font-weight: bold;
         }
 
     .row-label {
-        width: 24px;
+        width: 26px;
         font-weight: bold;
         text-align: center;
-        color: #555;
+        color: #495057;
     }
 
     .screen-wrapper {
@@ -117,6 +134,7 @@
             left: 50%;
             transform: translateX(-50%);
             font-size: 13px;
+            font-weight: 500;
             color: #888;
         }
 </style>
@@ -146,6 +164,7 @@
                     const seatName = `${rowLabel}${c + 1}`;
                     seat.textContent = c + 1;
                     seat.dataset.name = seatName;
+                    seat.title = seatName;
 
                     seat.addEventListener("click", () => {
                         seat.classList.toggle("selected");
@@ -162,21 +181,19 @@
 
                 seatMatrix.appendChild(rowDiv);
 
-                // Render row config dynamically
-                const index = r;
                 seatTypeRows.innerHTML += `
                     <tr>
                         <td>${rowLabel}</td>
                         <td>
-                            <select name="SeatTypeRows[${index}].LoaiGhe" class="form-select form-select-sm">
+                            <select name="SeatTypeRows[${r}].LoaiGhe" class="form-select form-select-sm">
                                 <option value="Thường">Thường</option>
                                 <option value="VIP">VIP</option>
                                 <option value="Đôi">Đôi</option>
                             </select>
                         </td>
                         <td>
-                            <input type="hidden" name="SeatTypeRows[${index}].MaGhe" value="${rowLabel}" />
-                            <input type="number" name="SeatTypeRows[${index}].Gia" class="form-control form-control-sm" value="15000" />
+                            <input type="hidden" name="SeatTypeRows[${r}].MaGhe" value="${rowLabel}" />
+                            <input type="number" name="SeatTypeRows[${r}].Gia" class="form-control form-control-sm" value="0" />
                         </td>
                     </tr>`;
             }
@@ -209,6 +226,8 @@
             const cols = parseInt(document.getElementById("cols").value);
             if (rows > 0 && cols > 0) {
                 createMatrix(rows, cols);
+            } else {
+                alert("Vui lòng nhập số hàng và cột hợp lệ!");
             }
         });
     </script>

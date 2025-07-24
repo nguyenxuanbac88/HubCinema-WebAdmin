@@ -6,6 +6,7 @@ namespace HubCinemaAdmin.Services
 {
     public interface IRoomService
     {
+        Task<bool> CreateRoomAsync(RoomDTO room);
         Task<List<RoomDTO>> GetRoomsByCinemaIdAsync(int cinemaId);
     }
 }

@@ -4,10 +4,10 @@
     ViewData["Title"] = "Quản lý Banner";
 }
 
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-primary">Quản lý Banner</h2>
-        <a asp-action="Create" class="btn btn-success shadow">
+<div class="container" style="max-width: 1200px;">
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-4">
+        <h2 class="fw-bold text-primary fs-5">Danh sách banner</h2>
+        <a asp-action="Create" class="btn btn-sm btn-success shadow-sm">
             <i class="fas fa-plus me-1"></i> Thêm banner mới
         </a>
     </div>
@@ -24,24 +24,24 @@
     else
     {
         <div class="table-responsive">
-            <table class="table table-hover table-bordered align-middle shadow-sm">
-                <thead class="table-dark text-center">
+            <table class="table table-bordered table-hover table-sm align-middle text-center">
+                <thead class="table-dark small text-uppercase">
                     <tr>
-                        <th scope="col">STT</th>
-                        <th scope="col">Tiêu đề</th>
-                        <th scope="col">Ảnh</th>
-                        <th scope="col">Link</th>
-                        <th scope="col">Thứ tự</th>
-                        <th scope="col">Trạng thái</th>
-                        <th scope="col">Ngày tạo</th>
-                        <th scope="col">Hành động</th>
+                        <th>#</th>
+                        <th>Tiêu đề</th>
+                        <th>Ảnh</th>
+                        <th>Link</th>
+                        <th>Thứ tự</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th>Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
                     @for (int i = 0; i < Model.Count; i++)
                     {
                         var banner = Model[i];
-                        <tr class="text-center">
+                        <tr>
                             <td>@(i + 1)</td>
                             <td class="text-start">@banner.Title</td>
                             <td>
@@ -53,9 +53,13 @@
                             <td>
                                 @if (!string.IsNullOrEmpty(banner.LinkUrl))
                                 {
-                                    <a href="@banner.LinkUrl" target="_blank" class="text-decoration-none">
+                                    <a href="@banner.LinkUrl" target="_blank" class="btn btn-sm btn-outline-secondary">
                                         <i class="fas fa-link"></i> Mở link
                                     </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small fst-italic">Không có</span>
                                 }
                             </td>
                             <td>@banner.DisplayOrder</td>
@@ -71,12 +75,16 @@
                             </td>
                             <td>@banner.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
                             <td>
-                                <a asp-action="Edit" asp-route-id="@banner.BannerId" class="btn btn-sm btn-outline-primary me-1">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a asp-action="Delete" asp-route-id="@banner.BannerId" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa banner này không?');">
-                                    <i class="fas fa-trash-alt"></i>
-                                </a>
+                                <div class="d-flex justify-content-center">
+                                    <a asp-action="Edit" asp-route-id="@banner.BannerId" class="btn btn-sm btn-outline-warning me-1">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@banner.BannerId"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Bạn có chắc chắn muốn xóa banner này không?');">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     }

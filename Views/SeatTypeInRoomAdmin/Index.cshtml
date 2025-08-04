@@ -1,7 +1,7 @@
 ﻿@model List<SeatTypeInRoomAdminViewModel>
 
 @{
-    ViewData["Title"] = "Danh sách loại ghế trong phòng";
+    ViewData["Title"] = "Loại ghế trong phòng";
 
     string CurrentSortField = ViewBag.CurrentSortField as string ?? "Id";
     string CurrentSortOrder = ViewBag.CurrentSortOrder as string ?? "asc";
@@ -11,23 +11,19 @@
     List<string> RoomNames = ViewBag.RoomNames as List<string> ?? new();
 
     string SortIcon(string field) =>
-        field == CurrentSortField
-            ? (CurrentSortOrder == "asc" ? "▲" : "▼")
-            : "";
+        field == CurrentSortField ? (CurrentSortOrder == "asc" ? "▲" : "▼") : "";
 
     string NextSort(string field) =>
         field == CurrentSortField && CurrentSortOrder == "asc" ? "desc" : "asc";
 }
 
-<div class="container mt-4">
-    <h2 class="mb-3">Danh sách loại ghế trong phòng</h2>
+<div class="container" style="max-width: 1200px;">
+    <h2 class="fw-bold text-primary fs-5 mb-4">Danh sách loại ghế trong phòng</h2>
 
-
-    <!-- Bộ lọc -->
-    <form method="get" class="row g-3 mb-3">
+    <form method="get" class="row gx-3 gy-2 align-items-end mb-4">
         <div class="col-md-4">
-            <label>Rạp</label>
-            <select name="cinema" class="form-select" onchange="this.form.submit()">
+            <label class="form-label mb-1 small">Rạp</label>
+            <select name="cinema" class="form-select form-select-sm" onchange="this.form.submit()">
                 <option value="">-- Tất cả --</option>
                 @foreach (var name in CinemaNames)
                 {
@@ -39,8 +35,8 @@
         </div>
 
         <div class="col-md-4">
-            <label>Phòng</label>
-            <select name="room" class="form-select" onchange="this.form.submit()">
+            <label class="form-label mb-1 small">Phòng</label>
+            <select name="room" class="form-select form-select-sm" onchange="this.form.submit()">
                 <option value="">-- Tất cả --</option>
                 @foreach (var name in RoomNames)
                 {
@@ -55,75 +51,76 @@
         <input type="hidden" name="sortOrder" value="@CurrentSortOrder" />
 
         <div class="col-md-4 d-flex align-items-end">
-            <a href="@Url.Action("Index")" class="btn btn-secondary">Xoá bộ lọc</a>
+            <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-sm w-100">Xoá bộ lọc</a>
         </div>
     </form>
 
-    <!-- Bảng dữ liệu -->
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>
-                    <a asp-action="Index"
-                       asp-route-sortField="Id"
-                       asp-route-sortOrder="@NextSort("Id")"
-                       asp-route-cinema="@SelectedCinema"
-                       asp-route-room="@SelectedRoom"
-                       class="text-white text-decoration-none">
-                        ID @SortIcon("Id")
-                    </a>
-                </th>
-                <th>
-                    <a asp-action="Index"
-                       asp-route-sortField="CinemaName"
-                       asp-route-sortOrder="@NextSort("CinemaName")"
-                       asp-route-cinema="@SelectedCinema"
-                       asp-route-room="@SelectedRoom"
-                       class="text-white text-decoration-none">
-                        Rạp @SortIcon("CinemaName")
-                    </a>
-                </th>
-                <th>
-                    <a asp-action="Index"
-                       asp-route-sortField="RoomName"
-                       asp-route-sortOrder="@NextSort("RoomName")"
-                       asp-route-cinema="@SelectedCinema"
-                       asp-route-room="@SelectedRoom"
-                       class="text-white text-decoration-none">
-                        Phòng @SortIcon("RoomName")
-                    </a>
-                </th>
-                <th>Hàng ghế</th>
-                <th>Loại ghế</th>
-                <th>
-                    <a asp-action="Index"
-                       asp-route-sortField="Price"
-                       asp-route-sortOrder="@NextSort("Price")"
-                       asp-route-cinema="@SelectedCinema"
-                       asp-route-room="@SelectedRoom"
-                       class="text-white text-decoration-none">
-                        Giá @SortIcon("Price")
-                    </a>
-                </th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover table-sm text-center align-middle">
+            <thead class="table-dark text-uppercase small">
                 <tr>
-                    <td>@item.Id</td>
-                    <td>@item.CinemaName</td>
-                    <td>@item.RoomName</td>
-                    <td>@item.RowCode</td>
-                    <td>@item.SeatType</td>
-                    <td>@item.Price.ToString("N0") ₫</td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Sửa</a>
-                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Xoá</a>
-                    </td>
+                    <th>
+                        <a asp-action="Index"
+                           asp-route-sortField="Id"
+                           asp-route-sortOrder="@NextSort("Id")"
+                           asp-route-cinema="@SelectedCinema"
+                           asp-route-room="@SelectedRoom"
+                           class="text-white text-decoration-none">
+                            ID @SortIcon("Id")
+                        </a>
+                    </th>
+                    <th>
+                        <a asp-action="Index"
+                           asp-route-sortField="CinemaName"
+                           asp-route-sortOrder="@NextSort("CinemaName")"
+                           asp-route-cinema="@SelectedCinema"
+                           asp-route-room="@SelectedRoom"
+                           class="text-white text-decoration-none">
+                            Rạp @SortIcon("CinemaName")
+                        </a>
+                    </th>
+                    <th>
+                        <a asp-action="Index"
+                           asp-route-sortField="RoomName"
+                           asp-route-sortOrder="@NextSort("RoomName")"
+                           asp-route-cinema="@SelectedCinema"
+                           asp-route-room="@SelectedRoom"
+                           class="text-white text-decoration-none">
+                            Phòng @SortIcon("RoomName")
+                        </a>
+                    </th>
+                    <th>Hàng ghế</th>
+                    <th>Loại ghế</th>
+                    <th>
+                        <a asp-action="Index"
+                           asp-route-sortField="Price"
+                           asp-route-sortOrder="@NextSort("Price")"
+                           asp-route-cinema="@SelectedCinema"
+                           asp-route-room="@SelectedRoom"
+                           class="text-white text-decoration-none">
+                            Giá @SortIcon("Price")
+                        </a>
+                    </th>
+                    <th>Hành động</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody class="small">
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.CinemaName</td>
+                        <td>@item.RoomName</td>
+                        <td>@item.RowCode</td>
+                        <td><span class="badge bg-info text-dark">@item.SeatType</span></td>
+                        <td class="text-danger fw-semibold">@item.Price.ToString("N0") ₫</td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning me-1">Sửa</a>
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Xoá</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>

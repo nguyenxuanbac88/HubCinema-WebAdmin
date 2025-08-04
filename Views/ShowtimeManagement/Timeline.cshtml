@@ -3,46 +3,50 @@
     var cinemas = ViewBag.Cinemas as List<HubCinemaAdmin.Models.CinemaDTO>;
 }
 
-<div class="container py-4">
-    <h2>@ViewData["Title"]</h2>
+<div class="container mt-4">
+    <h2 class="mb-3 fw-bold text-primary fs-5">Lịch chiếu theo rạp</h2>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-6">
-            <label for="cinemaSelect" class="form-label">Chọn rạp:</label>
-            <select id="cinemaSelect" class="form-select">
+    <form class="row g-3 align-items-end mb-4">
+        <div class="col-md-6 col-lg-4">
+            <label for="cinemaSelect" class="form-label mb-1">Chọn rạp</label>
+            <select id="cinemaSelect" class="form-select form-select-sm">
                 <option value="">-- Chọn rạp --</option>
-                @if (cinemas != null)
+                @foreach (var c in cinemas ?? new())
                 {
-                    foreach (var c in cinemas)
-                    {
-                        <option value="@c.IDCinema">@c.CinemaName</option>
-                    }
+                    <option value="@c.IDCinema">@c.CinemaName</option>
                 }
             </select>
         </div>
-        <div class="col-md-6">
-            <label for="dateInput" class="form-label">Chọn ngày:</label>
-            <input type="date" id="dateInput" class="form-control" />
-        </div>
-    </div>
 
-    <button type="button" class="btn btn-primary" id="loadTimeline">Tải lịch chiếu</button>
-    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addShowtimeModal">
-        Thêm lịch chiếu
-    </button>
+        <div class="col-md-6 col-lg-4">
+            <label for="dateInput" class="form-label mb-1">Chọn ngày</label>
+            <input type="date" id="dateInput" class="form-control form-control-sm" />
+        </div>
+
+        <div class="col-12 col-lg-4 d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-primary mt-4" id="loadTimeline">
+                <i class="fas fa-sync-alt me-1"></i> Tải lịch chiếu
+            </button>
+            <button type="button" class="btn btn-sm btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addShowtimeModal">
+                <i class="fas fa-plus me-1"></i> Thêm lịch chiếu
+            </button>
+        </div>
+    </form>
+
+    <!-- Modal thêm lịch chiếu -->
     <div class="modal fade" id="addShowtimeModal" tabindex="-1" aria-labelledby="addShowtimeModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <form id="addShowtimeForm">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="addShowtimeModalLabel">Thêm lịch chiếu mới</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        <h5 class="modal-title">Thêm lịch chiếu mới</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Rạp</label>
-                            <select name="CinemaId" class="form-control" required>
-                                @foreach (var cinema in ViewBag.Cinemas as List<HubCinemaAdmin.Models.CinemaDTO>)
+                            <select name="CinemaId" class="form-select form-select-sm" required>
+                                @foreach (var cinema in cinemas ?? new())
                                 {
                                     <option value="@cinema.IDCinema">@cinema.CinemaName</option>
                                 }
@@ -50,44 +54,44 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Ngày chiếu</label>
-                            <input type="date" name="NgayChieu" class="form-control" required />
+                            <input type="date" name="NgayChieu" class="form-control form-control-sm" required />
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Tên phim</label>
-                            <input type="text" name="TenPhim" class="form-control" required />
+                            <input type="text" name="TenPhim" class="form-control form-control-sm" required />
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Thời gian bắt đầu</label>
-                            <input type="time" name="ThoiGianBatDau" class="form-control" required />
+                            <input type="time" name="ThoiGianBatDau" class="form-control form-control-sm" required />
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Thời gian kết thúc</label>
-                            <input type="time" name="ThoiGianKetThuc" class="form-control" required />
+                            <input type="time" name="ThoiGianKetThuc" class="form-control form-control-sm" required />
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">Lưu</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-sm btn-success">Lưu</button>
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Hủy</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
-    <div id="timelineWrapper" class="mt-5">
+
+    <div id="timelineWrapper" class="mt-4 position-relative">
+        <div class="g-now-indicator" id="nowIndicator"></div>
         <!-- timeline sẽ render ở đây -->
     </div>
+
 </div>
 
 @section Scripts {
     <script>
-        const btn = document.getElementById('loadTimeline');
-        btn.addEventListener('click', loadTimeline);
-
         async function loadTimeline() {
             const cinemaId = document.getElementById('cinemaSelect').value;
             const date = document.getElementById('dateInput').value;
             const wrapper = document.getElementById('timelineWrapper');
-            wrapper.innerHTML = '';
+            wrapper.innerHTML = '<div class="g-now-indicator" id="nowIndicator"></div>'; // reset + thêm lại indicator
 
             if (!cinemaId || !date) {
                 alert('Vui lòng chọn rạp và ngày.');
@@ -100,24 +104,19 @@
                 if (!res.ok) throw new Error('API error ' + res.status);
                 data = await res.json();
             } catch (err) {
-                wrapper.innerHTML = `<div class="alert alert-danger">Không có lịch chiếu. </div>`;
+                wrapper.innerHTML += `<div class="alert alert-danger">Không có lịch chiếu. </div>`;
                 return;
             }
 
             if (!Array.isArray(data) || data.length === 0) {
-                wrapper.innerHTML = `<div class="alert alert-warning">Không có lịch chiếu.</div>`;
+                wrapper.innerHTML += `<div class="alert alert-warning">Không có lịch chiếu.</div>`;
                 return;
             }
 
             renderGantt(wrapper, data, date);
         }
 
-        /**
-         * data: [{id,name,start,end,resource}]
-         * container: element để render
-         */
         function renderGantt(container, data, dateStr) {
-            // Parse & normalize
             const items = data.map(x => ({
                 id: x.id,
                 name: x.name,
@@ -126,38 +125,30 @@
                 end: new Date(x.end)
             }));
 
-            // Giới hạn trong ngày được chọn: nếu API trả cả khác ngày thì cắt
             const dayStart = new Date(dateStr + 'T00:00:00');
             const dayEnd = new Date(dateStr + 'T23:59:59');
 
-            // Lấy min/max (clamp vào trong ngày)
             let minTime = dayEnd, maxTime = dayStart;
             for (const it of items) {
                 const s = it.start < dayStart ? dayStart : it.start;
-                const e = it.end   > dayEnd   ? dayEnd   : it.end;
+                const e = it.end > dayEnd ? dayEnd : it.end;
                 if (s < minTime) minTime = s;
                 if (e > maxTime) maxTime = e;
-                // ghi lại clamp để dùng sau
                 it._startClamped = s;
                 it._endClamped = e;
             }
-
-            // Nếu tất cả nằm cùng 1 giờ -> mở rộng thêm 1h hai đầu cho dễ xem
-            if (maxTime - minTime < 60*60*1000) {
-                minTime = new Date(minTime.getTime() - 30*60*1000);
-                maxTime = new Date(maxTime.getTime() + 30*60*1000);
+            if (maxTime - minTime < 60 * 60 * 1000) {
+                minTime = new Date(minTime.getTime() - 30 * 60 * 1000);
+                maxTime = new Date(maxTime.getTime() + 30 * 60 * 1000);
             }
 
             const totalMs = maxTime - minTime;
-
-            // Group theo phòng
             const byRoom = {};
             for (const it of items) {
                 if (!byRoom[it.resource]) byRoom[it.resource] = [];
                 byRoom[it.resource].push(it);
             }
 
-            // ----- BUILD DOM -----
             const scaleEl = buildTimeScale(minTime, maxTime);
             const rowsEl = document.createElement('div');
             rowsEl.className = 'g-rows';
@@ -174,7 +165,6 @@
                 const trackEl = document.createElement('div');
                 trackEl.className = 'g-row-track';
 
-                // bars
                 byRoom[roomName].forEach(it => {
                     const startPct = ((it._startClamped - minTime) / totalMs) * 100;
                     const widthPct = ((it._endClamped - it._startClamped) / totalMs) * 100;
@@ -197,18 +187,35 @@
 
             container.appendChild(scaleEl);
             container.appendChild(rowsEl);
+
+            renderNowIndicator(minTime, maxTime);
+            setInterval(() => renderNowIndicator(minTime, maxTime), 60000);
         }
+
+        function renderNowIndicator(minTime, maxTime) {
+            const now = new Date();
+            const indicator = document.getElementById('nowIndicator');
+
+            if (now < minTime || now > maxTime) {
+                indicator.style.display = 'none';
+                return;
+            }
+
+            const totalMs = maxTime - minTime;
+            const offsetPct = ((now - minTime) / totalMs) * 100;
+
+            indicator.style.display = 'block';
+            indicator.style.width = offsetPct + '%';  
+        }
+
 
         function buildTimeScale(minTime, maxTime) {
             const el = document.createElement('div');
             el.className = 'g-scale';
-
-            // tạo mốc giờ tròn
-            const startHour = minTime.getHours() + (minTime.getMinutes() > 0 ? 1 : 0); // làm tròn lên
-            const endHour = maxTime.getHours() + 1; // làm tròn lên
+            const startHour = minTime.getHours() + (minTime.getMinutes() > 0 ? 1 : 0);
+            const endHour = maxTime.getHours() + 1;
             const totalMs = maxTime - minTime;
 
-            // nhãn trái (trống cho align label cột phòng)
             const labelSpacer = document.createElement('div');
             labelSpacer.className = 'g-scale-label-spacer';
             el.appendChild(labelSpacer);
@@ -219,12 +226,10 @@
             for (let h = startHour; h <= endHour; h++) {
                 const tickTime = new Date(minTime);
                 tickTime.setHours(h, 0, 0, 0);
-                // clamp
                 if (tickTime < minTime) continue;
                 if (tickTime > maxTime) break;
 
                 const pct = ((tickTime - minTime) / totalMs) * 100;
-
                 const tick = document.createElement('div');
                 tick.className = 'g-scale-tick';
                 tick.style.left = pct + '%';
@@ -238,36 +243,32 @@
         function fmtTime(dt) {
             return dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
+
+        document.getElementById('loadTimeline').addEventListener('click', loadTimeline);
     </script>
 
+
     <style>
-        /* tổng wrapper */
         #timelineWrapper {
             width: 100%;
-            max-width: 100%;
             overflow-x: auto;
-            position: relative;
             font-size: 14px;
         }
 
-        /* thước thời gian */
         .g-scale {
-            position: relative;
             display: flex;
-            width: 100%;
             margin-bottom: .5rem;
             font-size: 12px;
             color: #555;
         }
 
         .g-scale-label-spacer {
-            width: 160px; /* cùng độ rộng label phòng */
-            flex: 0 0 auto;
+            width: 160px;
         }
 
         .g-scale-track {
+            flex: 1;
             position: relative;
-            flex: 1 1 auto;
             height: 20px;
             border-bottom: 1px solid #ccc;
         }
@@ -279,60 +280,52 @@
             white-space: nowrap;
         }
 
-        /* vùng hàng */
         .g-rows {
             width: 100%;
         }
 
         .g-row {
             display: flex;
-            width: 100%;
             min-height: 48px;
             border-bottom: 1px solid #e0e0e0;
         }
 
         .g-row-label {
             width: 160px;
-            flex: 0 0 auto;
             padding: 8px;
             background: #f8f9fa;
             border-right: 1px solid #e0e0e0;
-            text-align: left;
             font-weight: 600;
-            font-size: 14px;
-            line-height: 32px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         .g-row-track {
+            flex: 1;
             position: relative;
-            flex: 1 1 auto;
             background: #fff;
         }
 
-        /* thanh phim */
         .g-bar {
             position: absolute;
             top: 4px;
-            height: 32px;
+            height: 40px;
             background: #8ec5ff;
             border: 1px solid #4a86c5;
             border-radius: 4px;
             padding: 2px 4px;
             box-sizing: border-box;
-            overflow: hidden;
-            cursor: pointer;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
         }
 
         .g-bar-text {
             font-weight: 600;
             font-size: 12px;
-            line-height: 1.1;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -340,7 +333,17 @@
 
         .g-bar-time {
             font-size: 11px;
-            line-height: 1.1;
+        }
+
+        .g-now-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.1); /* nền mờ */
+            border-right: 2px solid red; /* vạch đỏ chạy */
+            z-index: 5;
+            pointer-events: none;
         }
     </style>
 }

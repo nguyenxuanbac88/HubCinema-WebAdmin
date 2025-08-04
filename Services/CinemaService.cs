@@ -1,6 +1,7 @@
 ﻿using HubCinemaAdmin.Helpers;
 using HubCinemaAdmin.Models;
 using Newtonsoft.Json;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
@@ -67,5 +68,15 @@ namespace HubCinemaAdmin.Services
             var response = await client.PutAsJsonAsync(LinkHost.Url + $"/Admin/UpdateCinema/{cinema.IDCinema}", cinema);
             return response.IsSuccessStatusCode;
         }
+        public async Task<bool> DeleteCinemaAsync(int idCinema)
+        {
+            var client = CreateAuthorizedClient();
+            var response = await client.DeleteAsync(LinkHost.Url + $"/Admin/DeleteCinema/{idCinema}");
+            var content = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Status: {response.StatusCode}, Response: {content}");
+            Console.WriteLine($"Request URL: {LinkHost.Url + $"/Admin/DeleteCinema/{idCinema}"}");
+            return response.IsSuccessStatusCode;
+        }
+
     }
 }

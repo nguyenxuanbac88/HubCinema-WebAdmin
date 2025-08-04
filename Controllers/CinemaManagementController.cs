@@ -98,5 +98,25 @@ namespace HubCinemaAdmin.Controllers
             TempData["Error"] = "Cập nhật rạp chiếu thất bại!";
             return View(cinemaDTO);
         }
+        [HttpDelete("CinemaManagement/DeleteCinema/{idCinema}")]
+        public async Task<IActionResult> DeleteCinema(int idCinema)
+        {
+            if (!IsAuthenticated)
+                return Unauthorized();
+
+            try
+            {
+                var success = await _cinemaService.DeleteCinemaAsync(idCinema);
+                if (success)
+                    return Ok("Xóa thành công!");
+                else
+                    return BadRequest("Xóa rạp chiếu thất bại!");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi xóa rạp: {ex.Message}");
+            }
+        }
+
     }
 }

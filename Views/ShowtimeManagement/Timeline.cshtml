@@ -1,4 +1,5 @@
-﻿@{
+﻿@model HubCinemaAdmin.Models.ShowtimeDTO
+@{
     ViewData["Title"] = "Lịch chiếu theo rạp";
     var cinemas = ViewBag.Cinemas as List<HubCinemaAdmin.Models.CinemaDTO>;
 }
@@ -36,47 +37,73 @@
     <!-- Modal thêm lịch chiếu -->
     <div class="modal fade" id="addShowtimeModal" tabindex="-1" aria-labelledby="addShowtimeModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-            <form id="addShowtimeForm">
+            <form id="addShowtimeForm" asp-action="CreateSchedule" asp-controller="ShowtimeManagement" method="post">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Thêm lịch chiếu mới</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
                     <div class="modal-body">
+                        <!-- Rạp -->
                         <div class="mb-3">
                             <label class="form-label">Rạp</label>
-                            <select name="CinemaId" class="form-select form-select-sm" required>
-                                @foreach (var cinema in cinemas ?? new())
-                                {
-                                    <option value="@cinema.IDCinema">@cinema.CinemaName</option>
-                                }
+                            <div class="form-control form-control-sm" id="selectedCinemaText" readonly></div>
+                            <input type="hidden" name="MaRap" id="selectedCinemaId" />
+                        </div>
+
+                        <!-- Phòng chiếu -->
+                        <div class="mb-3">
+                            <label class="form-label">Phòng chiếu</label>
+                            <select name="PhongChieu" id="roomSelect" class="form-select form-select-sm" required>
+                                <option value="">-- Chọn phòng chiếu --</option>
                             </select>
                         </div>
+
+                        <!-- Ngày chiếu -->
                         <div class="mb-3">
                             <label class="form-label">Ngày chiếu</label>
                             <input type="date" name="NgayChieu" class="form-control form-control-sm" required />
                         </div>
+
+                        <!-- Phim -->
                         <div class="mb-3">
-                            <label class="form-label">Tên phim</label>
-                            <input type="text" name="TenPhim" class="form-control form-control-sm" required />
+                            <label class="form-label">Phim</label>
+                            <select name="MaPhim" id="movieSelect" class="form-select form-select-sm" required>
+                                <option value="">-- Chọn phim --</option>
+                            </select>
                         </div>
+
+                        <!-- Thời gian bắt đầu -->
                         <div class="mb-3">
                             <label class="form-label">Thời gian bắt đầu</label>
-                            <input type="time" name="ThoiGianBatDau" class="form-control form-control-sm" required />
+                            <input type="time" name="GioChieu" class="form-control form-control-sm" required />
                         </div>
+
+                        <!-- Thời gian kết thúc -->
                         <div class="mb-3">
                             <label class="form-label">Thời gian kết thúc</label>
-                            <input type="time" name="ThoiGianKetThuc" class="form-control form-control-sm" required />
+                            <input type="hidden" name="GioKetThuc" />
+                        </div>
+
+                        <!-- Chi phí -->
+                        <div class="form-group">
+                            <label class="form-label">Chi phí</label>
+                            <input name="ChiPhi" class="form-control form-control-sm" type="number" step="0.01" required />
+                        </div>
+
+                        <!-- Loại suất chiếu -->
+                        <div class="form-group">
+                            <label class="form-label">Loại suất chiếu</label>
+                            <input name="TypeSuatChieu" class="form-control form-control-sm" required />
                         </div>
                     </div>
+
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-sm btn-success">Lưu</button>
                         <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Hủy</button>
                     </div>
                 </div>
             </form>
+
         </div>
     </div>
+
 
     <div id="timelineWrapper" class="mt-4 position-relative">
         <div class="g-now-indicator" id="nowIndicator"></div>
@@ -91,7 +118,7 @@
             const cinemaId = document.getElementById('cinemaSelect').value;
             const date = document.getElementById('dateInput').value;
             const wrapper = document.getElementById('timelineWrapper');
-            wrapper.innerHTML = '<div class="g-now-indicator" id="nowIndicator"></div>'; // reset + thêm lại indicator
+            wrapper.innerHTML = '<div class="g-now-indicator" id="nowIndicator"></div>';
 
             if (!cinemaId || !date) {
                 alert('Vui lòng chọn rạp và ngày.');
@@ -205,9 +232,8 @@
             const offsetPct = ((now - minTime) / totalMs) * 100;
 
             indicator.style.display = 'block';
-            indicator.style.width = offsetPct + '%';  
+            indicator.style.width = offsetPct + '%';
         }
-
 
         function buildTimeScale(minTime, maxTime) {
             const el = document.createElement('div');
@@ -245,6 +271,71 @@
         }
 
         document.getElementById('loadTimeline').addEventListener('click', loadTimeline);
+
+        document.getElementById('addShowtimeModal').addEventListener('show.bs.modal', async function () {
+            const cinemaSelect = document.getElementById('cinemaSelect');
+            const cinemaId = cinemaSelect.value;
+            const cinemaName = cinemaSelect.options[cinemaSelect.selectedIndex].text;
+
+            const roomSelect = document.getElementById('roomSelect');
+            const movieSelect = document.getElementById('movieSelect');
+
+            document.getElementById('selectedCinemaText').textContent = cinemaName;
+            document.getElementById('selectedCinemaId').value = cinemaId;
+
+            roomSelect.innerHTML = '';
+            movieSelect.innerHTML = '';
+
+            if (!cinemaId) {
+                roomSelect.innerHTML = '<option value="">-- Vui lòng chọn rạp trước --</option>';
+                movieSelect.innerHTML = '<option value="">-- Vui lòng chọn rạp trước --</option>';
+                return;
+            }
+
+            roomSelect.innerHTML = '<option value="">-- Đang tải phòng chiếu... --</option>';
+
+            try {
+                const res = await fetch(`/ShowtimeManagement/GetRoomsByCinema?cinemaId=${cinemaId}`);
+                if (!res.ok) {
+                    throw new Error(`API lỗi với mã trạng thái: ${res.status}`);
+                }
+
+                const rooms = await res.json();
+
+                if (!Array.isArray(rooms) || rooms.length === 0) {
+                    roomSelect.innerHTML = '<option value="">-- Không có phòng nào --</option>';
+                } else {
+                    roomSelect.innerHTML = rooms.map(r =>
+                        `<option value="${r.id}">${r.name}</option>`
+                    ).join('');
+                }
+            } catch (err) {
+                console.error('Lỗi khi gọi API phòng chiếu:', err);
+                roomSelect.innerHTML = '<option value="">-- Lỗi tải dữ liệu --</option>';
+            }
+
+            movieSelect.innerHTML = '<option value="">-- Đang tải phim... --</option>';
+
+            try {
+                const res = await fetch(`/ShowtimeManagement/LoadListMovie`);
+                if (!res.ok) {
+                    throw new Error(`API lỗi với mã trạng thái: ${res.status}`);
+                }
+
+                const movies = await res.json();
+
+                if (!Array.isArray(movies) || movies.length === 0) {
+                    movieSelect.innerHTML = '<option value="">-- Không có phim phù hợp --</option>';
+                } else {
+                    movieSelect.innerHTML = movies.map(m =>
+                        `<option value="${m.idMovie}">${m.movieName}</option>`
+                    ).join('');
+                }
+            } catch (err) {
+                console.error('Lỗi khi gọi API danh sách phim:', err);
+                movieSelect.innerHTML = '<option value="">-- Lỗi tải phim --</option>';
+            }
+        });
     </script>
 
 

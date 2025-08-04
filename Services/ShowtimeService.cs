@@ -1,8 +1,10 @@
 ﻿// Services/ShowtimeService.cs
 using HubCinemaAdmin.Helpers;
 using HubCinemaAdmin.Models;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
+using System.Text;
 
 namespace HubCinemaAdmin.Services
 {
@@ -47,14 +49,78 @@ namespace HubCinemaAdmin.Services
                 return new List<CinemaDTO>();
             }
         }
+        public async Task<List<MovieDTO>> GetMoviesAsync()
+        {
+            var client = _httpClientFactory.CreateClient();
+            var response = await client.GetAsync(LinkHost.Url + "/Public/GetMovies");
+            if (!response.IsSuccessStatusCode) return new();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var movies = JsonConvert.DeserializeObject<List<MovieDTO>>(json);
+
+            return movies?
+                .Where(m => m.status == 0 || m.status == 1)
+                .ToList() ?? new();
+        }
+
+        public async Task<List<RoomDTO>> GetRoomsAsync()
+        {
+            try
+            {
+                var url = $"{LinkHost.Url}/Public/GetRooms";
+                var response = await _httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStringAsync();
+                var rooms = JsonConvert.DeserializeObject<List<RoomDTO>>(json);
+
+                return rooms ?? new List<RoomDTO>();
+            }
+            catch
+            {
+                return new List<RoomDTO>();
+            }
+        }
+        public async Task<List<RoomDTO>> GetRoomsByCinemaIdAsync(int cinemaId)
+        {
+            var client = _httpClientFactory.CreateClient();
+
+            var token = _httpContextAccessor.HttpContext?.Session.GetString("Token");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
+            var response = await client.GetAsync(LinkHost.Url + $"/Admin/GetRoomsByCinemaId/{cinemaId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var rooms = JsonConvert.DeserializeObject<List<RoomDTO>>(json);
+                return rooms ?? new List<RoomDTO>();
+            }
+
+            return new List<RoomDTO>();
+        }
+
         public async Task<bool> CreateScheduleAsync(ShowtimeDTO showtimeDTO)
         {
             var client = CreateAuthorizedClient();
-            var response = await client.PostAsJsonAsync(LinkHost.Url + "/Schedule/CreateSchedule", showtimeDTO);
-            var json = System.Text.Json.JsonSerializer.Serialize(showtimeDTO);
-            Console.WriteLine("ROOM DTO JSON SENT: " + json);
+
+            var json = JsonConvert.SerializeObject(showtimeDTO, Formatting.Indented);
+            Console.WriteLine("[DEBUG - ShowtimeDTO JSON]");
+            Console.WriteLine(json);
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await client.PostAsync($"{LinkHost.Url}/Schedule/CreateSchedule", content);
+            var respContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"[DEBUG] STATUS: {response.StatusCode}, BODY: {respContent}");
+
             return response.IsSuccessStatusCode;
         }
+
         public async Task<List<ShowtimeTimelineDTO>> GetTimelineAsync(string ngay, int maRap)
         {
             if (string.IsNullOrWhiteSpace(ngay) || maRap <= 0)

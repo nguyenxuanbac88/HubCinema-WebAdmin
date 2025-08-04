@@ -11,7 +11,7 @@ namespace HubCinemaAdmin.Controllers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ShowtimeService _showtimeService;
 
-        public ShowtimeManagementController(IHttpClientFactory httpClientFactory , ShowtimeService showtimeService)
+        public ShowtimeManagementController(IHttpClientFactory httpClientFactory, ShowtimeService showtimeService)
         {
             _httpClientFactory = httpClientFactory;
             _showtimeService = showtimeService;
@@ -20,6 +20,7 @@ namespace HubCinemaAdmin.Controllers
         public async Task<IActionResult> Timeline()
         {
             var cinemas = await _showtimeService.GetCinemasAsync();
+
             ViewBag.Cinemas = cinemas;
             return View();
         }
@@ -35,14 +36,19 @@ namespace HubCinemaAdmin.Controllers
 
             return Json(data);
         }
+        public async Task<IActionResult> CreateSchedule()
+        {
+            var cinemas = await _showtimeService.GetCinemasAsync();
+            ViewBag.Cinemas = cinemas;
+            return View();
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateSchedule(ShowtimeDTO showtimeDTO)
         {
             if (!ModelState.IsValid)
                 return View(showtimeDTO);
 
-            if (!User.Identity.IsAuthenticated)
-                return RedirectToAction("Login", "Auth");
             var success = await _showtimeService.CreateScheduleAsync(showtimeDTO);
 
             if (success)
@@ -54,5 +60,34 @@ namespace HubCinemaAdmin.Controllers
             TempData["Error"] = "Tạo rạp chiếu thất bại!";
             return View(showtimeDTO);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetRoomsByCinema(int cinemaId)
+        {
+            if (cinemaId <= 0)
+                return BadRequest(new { success = false, message = "Mã rạp không hợp lệ." });
+
+            var rooms = await _showtimeService.GetRoomsByCinemaIdAsync(cinemaId);
+            if (rooms == null || !rooms.Any())
+                return NotFound(new { success = false, message = "Không có phòng chiếu nào." });
+
+            var result = rooms.Select(r => new
+            {
+                id = r.IDRoom,
+                name = r.RoomName
+            });
+
+            return Json(result);
+        }
+        [HttpGet]
+        public async Task<IActionResult> LoadListMovie()
+        {
+            var movies = await _showtimeService.GetMoviesAsync();
+            var filtered = movies
+                .Where(m => m.status == 0 || m.status == 1)
+                .Select(m => new { idMovie = m.IDMovie, movieName = m.MovieName });
+
+            return Json(filtered);
+        }
+
     }
 }

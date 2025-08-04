@@ -41,7 +41,11 @@
                 <input asp-for="ReleaseDate" class="form-control" type="date" />
                 <span asp-validation-for="ReleaseDate" class="text-danger small"></span>
             </div>
-
+            <div class="col-md-6">
+                <label asp-for="EndDate" class="form-label"></label>
+                <input asp-for="EndDate" class="form-control" type="date" />
+                <span asp-validation-for="EndDate" class="text-danger small"></span>
+            </div>
             <div class="col-md-6">
                 <label asp-for="CoverURL" class="form-label"></label>
                 <input asp-for="CoverURL" class="form-control" />

@@ -2,18 +2,33 @@
 using HubCinemaAdmin.Helpers;
 using HubCinemaAdmin.Models;
 using Newtonsoft.Json;
+using System.Net.Http.Headers;
 
 namespace HubCinemaAdmin.Services
 {
     public class ShowtimeService
     {
         private readonly HttpClient _httpClient;
-
-        public ShowtimeService(IHttpClientFactory httpClientFactory)
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public ShowtimeService(HttpClient httpClient, IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = httpClientFactory.CreateClient();
+            _httpClientFactory = httpClientFactory;
+            _httpContextAccessor = httpContextAccessor;
         }
+        private HttpClient CreateAuthorizedClient()
+        {
+            var client = _httpClientFactory.CreateClient();
+            var token = _httpContextAccessor.HttpContext?.Session.GetString("Token");
 
+            if (!string.IsNullOrEmpty(token))
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
+            return client;
+        }
         public async Task<List<CinemaDTO>> GetCinemasAsync()
         {
             try
@@ -32,11 +47,18 @@ namespace HubCinemaAdmin.Services
                 return new List<CinemaDTO>();
             }
         }
-
-        public async Task<List<ShowtimeDTO>> GetTimelineAsync(string ngay, int maRap)
+        public async Task<bool> CreateScheduleAsync(ShowtimeDTO showtimeDTO)
+        {
+            var client = CreateAuthorizedClient();
+            var response = await client.PostAsJsonAsync(LinkHost.Url + "/Schedule/CreateSchedule", showtimeDTO);
+            var json = System.Text.Json.JsonSerializer.Serialize(showtimeDTO);
+            Console.WriteLine("ROOM DTO JSON SENT: " + json);
+            return response.IsSuccessStatusCode;
+        }
+        public async Task<List<ShowtimeTimelineDTO>> GetTimelineAsync(string ngay, int maRap)
         {
             if (string.IsNullOrWhiteSpace(ngay) || maRap <= 0)
-                return new List<ShowtimeDTO>();
+                return new List<ShowtimeTimelineDTO>();
 
             try
             {
@@ -45,13 +67,13 @@ namespace HubCinemaAdmin.Services
                 response.EnsureSuccessStatusCode();
 
                 var json = await response.Content.ReadAsStringAsync();
-                var list = JsonConvert.DeserializeObject<List<ShowtimeDTO>>(json);
+                var list = JsonConvert.DeserializeObject<List<ShowtimeTimelineDTO>>(json);
 
-                return list ?? new List<ShowtimeDTO>();
+                return list ?? new List<ShowtimeTimelineDTO>();
             }
             catch
             {
-                return new List<ShowtimeDTO>();
+                return new List<ShowtimeTimelineDTO>();
             }
         }
     }

@@ -2,10 +2,14 @@
 {
     public class ShowtimeDTO
     {
-        public string Id { get; set; }  
-        public string Name { get; set; } 
-        public string Start { get; set; }
-        public string End { get; set; }
-        public string Resource { get; set; }
+        public int MaSuatChieu { get; set; }
+        public int PhongChieu { get; set; }
+        public int MaPhim { get; set; }
+        public DateTime NgayChieu { get; set; }
+        public TimeSpan GioChieu { get; set; }
+        public TimeSpan? GioKetThuc { get; set; }
+        public int ChiPhi { get; set; }
+        public int TypeSuatChieu { get; set; }
+        public int MaRap { get; set; }
     }
 }

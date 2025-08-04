@@ -36,19 +36,12 @@ namespace HubCinemaAdmin.Controllers
 
             return Json(data);
         }
-        public async Task<IActionResult> CreateSchedule()
-        {
-            var cinemas = await _showtimeService.GetCinemasAsync();
-            ViewBag.Cinemas = cinemas;
-            return View();
-        }
 
         [HttpPost]
         public async Task<IActionResult> CreateSchedule(ShowtimeDTO showtimeDTO)
         {
             if (!ModelState.IsValid)
-                return View(showtimeDTO);
-
+                RedirectToAction("Timeline", "ShowtimeManagement");
             var success = await _showtimeService.CreateScheduleAsync(showtimeDTO);
 
             if (success)
@@ -58,7 +51,7 @@ namespace HubCinemaAdmin.Controllers
             }
 
             TempData["Error"] = "Tạo rạp chiếu thất bại!";
-            return View(showtimeDTO);
+            return RedirectToAction("Timeline", "ShowtimeManagement");
         }
         [HttpGet]
         public async Task<IActionResult> GetRoomsByCinema(int cinemaId)

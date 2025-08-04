@@ -47,7 +47,7 @@ namespace HubCinemaAdmin.Controllers
                 ? "Tạo ma trận và cấu hình loại ghế thành công!"
                 : "Lỗi khi gửi dữ liệu đến API.";
 
-            return RedirectToAction("Create", new { idRoom = model.IdRoom });
+            return RedirectToAction("EditCinema", "CinemaManagement", new { idCinema = model.MaRap });
         }
     }
 }

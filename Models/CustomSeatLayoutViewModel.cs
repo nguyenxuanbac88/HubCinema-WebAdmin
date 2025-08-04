@@ -18,7 +18,6 @@ namespace HubCinemaAdmin.Models
             }
         }
 
-        // 👇 Thêm 2 dòng sau để hỗ trợ cấu hình ghế
         public int MaRap { get; set; }
 
         public List<SeatTypeDto> SeatTypeRows { get; set; } = new();

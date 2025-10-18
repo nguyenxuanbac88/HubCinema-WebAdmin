@@ -57,6 +57,23 @@ namespace HubCinemaAdmin.Services
             var response = await _httpClient.SendAsync(httpRequest);
             return response.IsSuccessStatusCode;
         }
+        public async Task<SeatLayoutResponse?> GetSeatLayoutResponseAsync(int idRoom)
+        {
+            var Url = $"{LinkHost.Url}/Seat/room-layout/{idRoom}";
+            var token = _httpContextAccessor.HttpContext?.Session.GetString("Token");
+            if (string.IsNullOrEmpty(token))
+                return null;
+            var request = new HttpRequestMessage(HttpMethod.Get, Url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
+            var response = await _httpClient.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var seatLayoutResponse = JsonConvert.DeserializeObject<SeatLayoutResponse>(content);
+                return seatLayoutResponse;
+            }
+            return null;
+        }
     }
 }

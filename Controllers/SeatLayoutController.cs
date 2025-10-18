@@ -12,14 +12,16 @@ namespace HubCinemaAdmin.Controllers
         {
             _seatLayoutService = seatLayoutService;
         }
-        public IActionResult Create(int idRoom, int maRap)
+        public IActionResult Create(int idRoom, int maRap, string? idLayout = null)
         {
             var model = new CustomSeatLayoutViewModel
             {
                 IdRoom = idRoom,
                 MaRap = maRap
             };
-
+            bool hasExistingLayout = !string.IsNullOrEmpty(idLayout);
+            ViewBag.HasExistingLayout = hasExistingLayout;
+            ViewBag.LayoutId = idLayout;
             return View(model);
         }
 

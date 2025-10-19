@@ -21,6 +21,8 @@ namespace HubCinemaAdmin.Models
         public int MaRap { get; set; }
 
         public List<SeatTypeDto> SeatTypeRows { get; set; } = new();
+        public bool HasExistingLayout { get; set; } = false;
+        public string? LayoutMatrix { get; set; }
     }
 
 }

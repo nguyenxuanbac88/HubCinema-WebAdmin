@@ -10,7 +10,7 @@
 @if (hasExistingLayout)
 {
     <!-- Hiển thị layout hiện có -->
-    <h2 class="mb-4 fw-bold text-primary">👁️ Xem Layout Ghế - Phòng @Model.IdRoom</h2>
+    <h2 class="mb-4 fw-bold text-primary">Xem Layout Ghế - Phòng @Model.IdRoom</h2>
     
     @if (!string.IsNullOrEmpty(ViewBag.Message as string))
     {
@@ -38,7 +38,7 @@
             <div id="existingLayoutDisplay">
                 <div class="seat-grid mb-4" id="existingSeatMatrix"></div>
                 <div class="screen-wrapper">
-                    <div class="screen">Màn hình</div>
+                    <div class="screen"></div>
                 </div>
             </div>
 
@@ -46,7 +46,7 @@
             <div id="editLayoutForm" style="display: none;">
                 <div class="card border-warning">
                     <div class="card-body">
-                        <h6 class="text-warning mb-3">🔧 Chỉnh sửa Layout</h6>
+                        <h6 class="text-warning mb-3">Chỉnh sửa Layout</h6>
                         
                         <form asp-action="Create" method="post">
                             <input type="hidden" asp-for="IdRoom" />
@@ -66,9 +66,14 @@
                                     <button type="button" id="regenerateMatrix" class="btn btn-success me-2">
                                         <i class="bi bi-arrow-clockwise"></i> Tạo lại ma trận
                                     </button>
-                                    <div class="form-check form-switch">
+                                    <div class="form-check form-switch me-3">
                                         <input class="form-check-input" type="checkbox" id="editPairModeToggle">
                                         <label class="form-check-label" for="editPairModeToggle">Ghế đôi</label>
+                                    </div>
+                                    <!-- ✅ Thêm tùy chọn thứ tự ghế -->
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="editSeatOrderToggle">
+                                        <label class="form-check-label" for="editSeatOrderToggle">Đánh số từ phải → trái</label>
                                     </div>
                                 </div>
                             </div>
@@ -118,7 +123,7 @@
 else
 {
     <!-- Form tạo mới layout (giữ nguyên code hiện tại) -->
-    <h2 class="mb-4 fw-bold text-primary">🎟️ Tạo Ma Trận Ghế - Phòng @Model.IdRoom</h2>
+    <h2 class="mb-4 fw-bold text-primary">Tạo Ma Trận Ghế - Phòng @Model.IdRoom</h2>
 
     @if (!string.IsNullOrEmpty(ViewBag.Message as string))
     {
@@ -286,6 +291,7 @@ else
         let pairMode = false;
         let firstSeatForPair = null;
         let editMode = false;
+        let editRightToLeft = false; // ✅ Biến để theo dõi thứ tự ghế
 
         // Render existing layout nếu có
         @if (hasExistingLayout && !string.IsNullOrEmpty(existingLayoutJson))
@@ -415,6 +421,9 @@ else
             seatMatrix.innerHTML = "";
             seatTypeRows.innerHTML = "";
 
+            // ✅ Lấy trạng thái thứ tự ghế
+            editRightToLeft = document.getElementById('editSeatOrderToggle').checked;
+
             for (let r = rows - 1; r >= 0; r--) {
                 const rowDiv = document.createElement("div");
                 rowDiv.classList.add("seat-row");
@@ -429,17 +438,41 @@ else
                     const seat = document.createElement("div");
                     seat.classList.add("seat");
 
-                    const seatName = `${rowLabel}${c + 1}`;
-                    seat.textContent = c + 1;
+                    // ✅ Tính số ghế dựa theo thứ tự
+                    const seatNumber = editRightToLeft ? (cols - c) : (c + 1);
+                    const seatName = `${rowLabel}${seatNumber}`;
+                    
+                    seat.textContent = seatNumber;
                     seat.dataset.name = seatName;
+                    seat.dataset.col = c; // Lưu vị trí cột thực tế
                     seat.title = seatName;
 
-                    // Load existing data if available
+                    // ✅ Sửa logic load existing data - mapping theo tên ghế
                     if (existingLayout && existingLayout[rows - 1 - r] && existingLayout[rows - 1 - r][c]) {
-                        seat.classList.add("selected");
                         const seatData = existingLayout[rows - 1 - r][c];
-                        if (typeof seatData === 'string' && seatData.includes('+')) {
-                            seat.classList.add("paired");
+                        
+                        // Kiểm tra xem tên ghế hiện tại có khớp với data không
+                        if (seatData) {
+                            let shouldSelect = false;
+                            
+                            if (typeof seatData === 'string' && seatData.includes('+')) {
+                                // Ghế đôi
+                                const [seat1Name, seat2Name] = seatData.split('+');
+                                if (seatName === seat1Name || seatName === seat2Name) {
+                                    seat.classList.add("selected", "paired");
+                                    shouldSelect = true;
+                                    
+                                    if (seatName === seat1Name) {
+                                        seat.dataset.pairedWith = seat2Name;
+                                    } else {
+                                        seat.dataset.pairedWith = seat1Name;
+                                    }
+                                }
+                            } else if (seatData === seatName) {
+                                // Ghế đơn
+                                seat.classList.add("selected");
+                                shouldSelect = true;
+                            }
                         }
                     }
 
@@ -477,7 +510,6 @@ else
         }
 
         function handleEditSeatClick() {
-            // Same logic as original seat click handler
             const seat = this;
             const editPairMode = document.getElementById('editPairModeToggle').checked;
 
@@ -491,8 +523,8 @@ else
 
                     const row1 = s1.dataset.name.match(/^[A-Z]+/)[0];
                     const row2 = s2.dataset.name.match(/^[A-Z]+/)[0];
-                    const col1 = parseInt(s1.dataset.name.match(/[0-9]+$/)[0]);
-                    const col2 = parseInt(s2.dataset.name.match(/[0-9]+$/)[0]);
+                    const col1 = parseInt(s1.dataset.col); // ✅ Dùng vị trí cột thực tế
+                    const col2 = parseInt(s2.dataset.col);
 
                     if (row1 === row2 && Math.abs(col1 - col2) === 1) {
                         s1.classList.add("selected", "paired");
@@ -537,22 +569,42 @@ else
                 const seats = row.querySelectorAll(".seat");
                 const used = new Set();
 
-                seats.forEach((seat, i) => {
-                    if (used.has(i)) return;
+                // ✅ Tạo mảng mapping theo vị trí cột thực tế
+                const seatsByCol = [];
+                seats.forEach(seat => {
+                    const col = parseInt(seat.dataset.col);
+                    seatsByCol[col] = seat;
+                });
+
+                seatsByCol.forEach((seat, colIndex) => {
+                    if (!seat || used.has(colIndex)) {
+                        if (!seat) rowData.push(null);
+                        return;
+                    }
 
                     if (seat.classList.contains("paired")) {
                         const pairedWith = seat.dataset.pairedWith;
-                        const nextSeat = seats[i + 1];
-                        if (nextSeat && nextSeat.dataset.name === pairedWith) {
-                            rowData.push(`${seat.dataset.name}+${pairedWith}`);
-                            used.add(i);
-                            used.add(i + 1);
+                        const pairedSeat = Array.from(seats).find(s => s.dataset.name === pairedWith);
+                        
+                        if (pairedSeat) {
+                            const pairedCol = parseInt(pairedSeat.dataset.col);
+                            // Đảm bảo thứ tự ghế đôi đúng
+                            if (colIndex < pairedCol) {
+                                rowData.push(`${seat.dataset.name}+${pairedWith}`);
+                                used.add(colIndex);
+                                used.add(pairedCol);
+                            } else if (!used.has(colIndex)) {
+                                rowData.push(`${pairedWith}+${seat.dataset.name}`);
+                                used.add(colIndex);
+                                used.add(pairedCol);
+                            }
                         }
                     } else if (seat.classList.contains("selected")) {
                         rowData.push(seat.dataset.name);
-                        used.add(i);
+                        used.add(colIndex);
                     } else {
                         rowData.push(null);
+                        used.add(colIndex);
                     }
                 });
 
@@ -561,6 +613,17 @@ else
 
             document.getElementById("EditLayoutJson").value = JSON.stringify(layout);
         }
+
+        // ✅ Event listener cho thay đổi thứ tự ghế
+        document.getElementById("editSeatOrderToggle")?.addEventListener("change", function () {
+            const rows = parseInt(document.getElementById('editRows').value);
+            const cols = parseInt(document.getElementById('editCols').value);
+            
+            if (rows > 0 && cols > 0) {
+                // Recreate matrix với thứ tự mới
+                createEditMatrix(rows, cols);
+            }
+        });
 
         // Event listeners for edit mode
         document.getElementById("regenerateMatrix")?.addEventListener("click", function () {

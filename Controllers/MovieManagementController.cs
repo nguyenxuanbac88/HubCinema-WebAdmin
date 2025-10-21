@@ -1,106 +1,201 @@
-﻿using HubCinemaAdmin.Helpers;
-using HubCinemaAdmin.Models;
+﻿using HubCinemaAdmin.Models;
+using HubCinemaAdmin.Services;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 
 namespace HubCinemaAdmin.Controllers
 {
     public class MovieManagementController : BaseController
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IMovieService _movieService;
 
-        public MovieManagementController(IHttpClientFactory httpClientFactory)
+        public MovieManagementController(IMovieService movieService)
         {
-            _httpClientFactory = httpClientFactory;
+            _movieService = movieService;
         }
 
+        [HttpGet]
         public IActionResult Create()
         {
+            // Check authentication
+            if (!IsAuthenticated)
+                return RedirectToAction("Login", "Auth");
+
             return View();
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(MovieDTO movie)
         {
-            if (!ModelState.IsValid)
-                return View(movie);
-
+            // Check authentication
             if (!IsAuthenticated)
                 return RedirectToAction("Login", "Auth");
 
-            var client = CreateAuthorizedClient(_httpClientFactory);
-            var response = await client.PostAsJsonAsync(LinkHost.Url + "/Admin/CreateMovie", movie);
+            // Validate request
+            if (!ModelState.IsValid)
+                return View(movie);
 
-            if (response.IsSuccessStatusCode)
+            try
             {
-                TempData["Success"] = "Tạo phim thành công!";
-                return RedirectToAction("LoadListMovie");
-            }
+                // Call service
+                var success = await _movieService.CreateMovieAsync(movie);
 
-            TempData["Error"] = "Tạo phim thất bại!";
-            return View(movie);
+                // Handle response
+                if (success)
+                {
+                    TempData["Success"] = "Tạo phim thành công!";
+                    return RedirectToAction("LoadListMovie");
+                }
+
+                TempData["Error"] = "Tạo phim thất bại!";
+                return View(movie);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Lỗi: {ex.Message}";
+                return View(movie);
+            }
         }
 
+        [HttpGet]
         public async Task<IActionResult> LoadListMovie(int pageNumber = 1)
         {
-            int pageSize = 10;
-            var client = _httpClientFactory.CreateClient();
+            // Check authentication
+            if (!IsAuthenticated)
+                return RedirectToAction("Login", "Auth");
 
-            var response = await client.GetAsync(LinkHost.Url + "/Public/GetMovies");
-            if (response.IsSuccessStatusCode)
+            const int pageSize = 10;
+
+            try
             {
-                var jsonString = await response.Content.ReadAsStringAsync();
-                var movies = JsonConvert.DeserializeObject<List<MovieDTO>>(jsonString);
+                // Call service
+                var movies = await _movieService.GetAllMoviesAsync();
 
-                int totalMovies = movies.Count;
+                // ✅ Kiểm tra null và tạo empty list nếu cần
+                if (movies == null)
+                {
+                    movies = new List<MovieDTO>();
+                }
+
+                // Prepare pagination
+                var totalMovies = movies.Count;
                 var moviesPaged = movies
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
 
+                // Set ViewBag for pagination
                 ViewBag.CurrentPage = pageNumber;
-                ViewBag.TotalPages = (int)Math.Ceiling((double)totalMovies / pageSize);
+                ViewBag.TotalPages = Math.Max(1, (int)Math.Ceiling((double)totalMovies / pageSize));
 
-                return View(moviesPaged);
+                // ✅ Đảm bảo luôn trả về list, không bao giờ null
+                return View(moviesPaged ?? new List<MovieDTO>());
             }
-
-            TempData["Error"] = "Không thể tải danh sách phim!";
-            return View(new List<MovieDTO>());
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Lỗi khi tải danh sách phim: " + ex.Message;
+                
+                // ✅ Set ViewBag để tránh lỗi pagination
+                ViewBag.CurrentPage = 1;
+                ViewBag.TotalPages = 1;
+                
+                // ✅ Trả về empty list thay vì null
+                return View(new List<MovieDTO>());
+            }
         }
 
+        [HttpGet]
         public async Task<IActionResult> EditMovie(int id)
         {
-            var client = _httpClientFactory.CreateClient();
-            var response = await client.GetAsync(LinkHost.Url + $"/Public/GetMovieById/{id}");
-            if (response.IsSuccessStatusCode)
-            {
-                var movie = await response.Content.ReadFromJsonAsync<MovieDTO>();
-                return View(movie);
-            }
+            // Check authentication
+            if (!IsAuthenticated)
+                return RedirectToAction("Login", "Auth");
 
-            return RedirectToAction("LoadListMovie");
+            try
+            {
+                // Call service
+                var movies = await _movieService.GetAllMoviesAsync();
+                
+                if (movies != null)
+                {
+                    var movie = movies.FirstOrDefault(m => m.IDMovie == id);
+                    if (movie != null)
+                    {
+                        return View(movie);
+                    }
+                }
+
+                TempData["Error"] = "Không tìm thấy phim!";
+                return RedirectToAction("LoadListMovie");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Lỗi khi tải thông tin phim: {ex.Message}";
+                return RedirectToAction("LoadListMovie");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> EditMovie(MovieDTO movie)
         {
-            if (!ModelState.IsValid)
-                return View(movie);
-
+            // Check authentication
             if (!IsAuthenticated)
                 return RedirectToAction("Login", "Auth");
 
-            var client = CreateAuthorizedClient(_httpClientFactory);
-            var response = await client.PutAsJsonAsync(LinkHost.Url + $"/Admin/UpdateMovie/{movie.IDMovie}", movie);
+            // Validate request
+            if (!ModelState.IsValid)
+                return View(movie);
 
-            if (response.IsSuccessStatusCode)
+            try
             {
-                TempData["Success"] = "Cập nhật phim thành công!";
+                // Call service
+                var success = await _movieService.UpdateMovieAsync(movie);
+
+                // Handle response
+                if (success)
+                {
+                    TempData["Success"] = "Cập nhật phim thành công!";
+                    return RedirectToAction("LoadListMovie");
+                }
+
+                TempData["Error"] = "Cập nhật phim thất bại!";
+                return View(movie);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Lỗi: {ex.Message}";
+                return View(movie);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteMovie(int id)
+        {
+            // Check authentication
+            if (!IsAuthenticated)
+                return RedirectToAction("Login", "Auth");
+
+            try
+            {
+                // Call service
+                var success = await _movieService.DeleteMovieAsync(id);
+
+                // Handle response
+                if (success)
+                {
+                    TempData["Success"] = "Xóa phim thành công!";
+                }
+                else
+                {
+                    TempData["Error"] = "Xóa phim thất bại!";
+                }
+
                 return RedirectToAction("LoadListMovie");
             }
-
-            TempData["Error"] = "Cập nhật phim thất bại!";
-            return View(movie);
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Lỗi khi xóa phim: {ex.Message}";
+                return RedirectToAction("LoadListMovie");
+            }
         }
     }
 }

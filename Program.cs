@@ -8,6 +8,8 @@ builder.Services.AddSession();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IRoomService, RoomService>();
+// builder.Services.AddScoped<ICinemaService, CinemaService>();
+builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ShowtimeService>();
 builder.Services.AddScoped<SeatLayoutService>();

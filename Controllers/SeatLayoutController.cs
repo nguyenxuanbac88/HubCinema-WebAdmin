@@ -33,17 +33,13 @@ namespace HubCinemaAdmin.Controllers
                 return View(model);
             }
 
-            // ✅ FIX 1: Bỏ IdLayout vì không tồn tại
             ViewBag.HasExistingLayout = true;
-            ViewBag.LayoutId = idLayout; // Chỉ dùng parameter
+            ViewBag.LayoutId = idLayout;
             
-            // Chuyển Layout matrix thành JSON string để hiển thị
             ViewBag.LayoutMatrix = JsonConvert.SerializeObject(seatLayoutResponse.Layout);
             
             model.HasExistingLayout = true;
             
-            // ✅ FIX 2: Không assign trực tiếp vào ParsedLayout (read-only)
-            // Thay vào đó, truyền qua ViewBag để View tự xử lý
             ViewBag.ExistingLayoutJson = JsonConvert.SerializeObject(seatLayoutResponse.Layout);
 
             return View(model);

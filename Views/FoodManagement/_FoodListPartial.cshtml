@@ -10,7 +10,7 @@ else
         @foreach (var food in Model)
         {
             <div class="col-md-4 mb-3">
-                <div class="card h-100">
+                <div class="card h-100 hover"  onclick="window.location='@Url.Action("EditFood", "FoodManagement", new { idFood = food.IDFood })'">
                     <img src="@food.ImageURL" class="card-img-top" alt="@food.FoodName" style="height:200px; object-fit:cover;" />
                     <div class="card-body">
                         <h5 class="card-title">@food.FoodName</h5>
@@ -22,3 +22,9 @@ else
         }
     </div>
 }
+
+<style>
+    .hover{
+        cursor: pointer;
+    }
+</style>

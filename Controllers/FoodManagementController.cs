@@ -76,5 +76,54 @@ namespace HubCinemaAdmin.Controllers
             var foods = await _foodService.GetAllFoodsAsync();
             return PartialView("_FoodListPartial", foods);
         }
+        public async Task<IActionResult> EditFood(int idFood)
+        {
+            if (!IsAuthenticated)
+                return RedirectToAction("Login", "Auth");
+            try
+            {
+                var foods = await _foodService.GetAllFoodsAsync();
+                if (foods != null)
+                {
+                    var food = foods.FirstOrDefault(m => m.IDFood == idFood);
+                    if (food != null) return View(food);
+                }
+                TempData["Error"] = "Food not found !";
+                return RedirectToAction("LoadListCombo");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Lỗi khi tải thông tin Food: {ex.Message}";
+                return RedirectToAction("LoadListMovie");
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> EditFood(FoodDTO foodDTO)
+        {
+            if (!IsAuthenticated)
+                return RedirectToAction("Login", "Auth");
+
+            if (!ModelState.IsValid)
+                return View(foodDTO);
+
+            try
+            {
+                var success = await _foodService.UpdateFoodAsync(foodDTO);
+
+                if (success)
+                {
+                    TempData["Success"] = "Cập nhật phim thành công!";
+                    return RedirectToAction("LoadListCombo");
+                }
+
+                TempData["Error"] = "Cập nhật phim thất bại!";
+                return View(foodDTO);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Lỗi: {ex.Message}";
+                return View(foodDTO);
+            }
+        }
     }
 }

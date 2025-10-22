@@ -7,7 +7,7 @@ using System.Text;
 
 namespace HubCinemaAdmin.Services
 {
-    public class FoodService
+    public class FoodService : IFoodService
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IHttpContextAccessor _contextAccessor;
@@ -95,6 +95,12 @@ namespace HubCinemaAdmin.Services
 
             var content = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<List<FoodDTO>>(content) ?? new List<FoodDTO>();
+        }
+        public async Task<bool> UpdateFoodAsync(FoodDTO foodDTO)
+        {
+            var client = CreateAuthorizedClient();
+            var response = await client.PutAsJsonAsync(LinkHost.Url + $"/Admin/UpdateFood/{foodDTO.IDFood}", foodDTO);
+            return response.IsSuccessStatusCode;
         }
     }
 }
